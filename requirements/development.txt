@@ -1,0 +1,10 @@
+-r base.txt
+
+# Development dependencies
+django-debug-toolbar>=4.0.0
+factory-boy>=3.2.0
+pytest-django>=4.5.0
+pytest-cov>=4.0.0
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
