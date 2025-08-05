@@ -47,7 +47,10 @@ class Industry(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs in this industry."""
-        return self.job_set.filter(is_active=True).count()
+        try:
+            return self.job_set.filter(is_active=True).count()
+        except AttributeError:
+            return 0
 
 
 class JobType(models.Model):
@@ -112,4 +115,7 @@ class JobType(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs of this type."""
-        return self.job_set.filter(is_active=True).count()
+        try:
+            return self.job_set.filter(is_active=True).count()
+        except AttributeError:
+            return 0

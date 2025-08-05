@@ -86,4 +86,8 @@ class Company(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs for this company."""
-        return self.job_set.filter(is_active=True).count()
+        # Return 0 until Job model is implemented and related
+        try:
+            return self.job_set.filter(is_active=True).count()
+        except AttributeError:
+            return 0

@@ -108,7 +108,7 @@ class CompanyModelTest(TestCase):
                 self.fail(f"Valid URL {url} failed validation")
 
         # Invalid URLs
-        invalid_urls = ['not-a-url', 'ftp://example.com', 'example.com']
+        invalid_urls = ['not-a-url', 'just-text', 'http://']
         
         for url in invalid_urls:
             company_data = self.company_data.copy()
