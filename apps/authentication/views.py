@@ -7,8 +7,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
+from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from drf_spectacular.openapi import OpenApiTypes
+from apps.common.throttling import (
+    LoginRateThrottle, RegisterRateThrottle, 
+    login_ratelimit, register_ratelimit, user_ratelimit
+)
 from .serializers import (
     CustomTokenObtainPairSerializer, UserSerializer, UserRegistrationSerializer,
     UserProfileSerializer, UserWithProfileSerializer, PasswordChangeSerializer
@@ -23,6 +28,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     Custom JWT token obtain view that returns user data along with tokens.
     """
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
 
     @extend_schema(
         tags=['Authentication'],
@@ -136,6 +142,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@login_ratelimit()
 def login_view(request):
     """
     Alternative login view using email and password.
@@ -372,6 +379,7 @@ def verify_token_view(request):
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@register_ratelimit()
 def register_view(request):
     """
     User registration view that creates a new user account.

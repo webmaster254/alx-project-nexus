@@ -4,6 +4,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from .models import UserProfile
+from apps.common.validators import (
+    SanitizedCharField, ValidatedEmailField, ValidatedURLField,
+    phone_validator, username_validator, validate_skills_list
+)
 
 User = get_user_model()
 
@@ -13,6 +17,10 @@ class UserSerializer(serializers.ModelSerializer):
     Serializer for User model with basic information.
     """
     full_name = serializers.CharField(source='get_full_name', read_only=True)
+    email = ValidatedEmailField()
+    username = SanitizedCharField(validators=[username_validator])
+    first_name = SanitizedCharField(max_length=150)
+    last_name = SanitizedCharField(max_length=150)
     
     class Meta:
         model = User
@@ -28,11 +36,22 @@ class UserProfileSerializer(serializers.ModelSerializer):
     Serializer for UserProfile model.
     """
     skills_list = serializers.ListField(
-        child=serializers.CharField(max_length=50),
+        child=SanitizedCharField(max_length=50),
         write_only=True,
         required=False,
         help_text="List of skills"
     )
+    phone_number = SanitizedCharField(
+        max_length=20, 
+        required=False, 
+        allow_blank=True,
+        validators=[phone_validator]
+    )
+    bio = SanitizedCharField(max_length=1000, required=False, allow_blank=True)
+    location = SanitizedCharField(max_length=200, required=False, allow_blank=True)
+    website = ValidatedURLField(required=False, allow_blank=True)
+    linkedin_url = ValidatedURLField(required=False, allow_blank=True)
+    github_url = ValidatedURLField(required=False, allow_blank=True)
     
     class Meta:
         model = UserProfile
@@ -43,6 +62,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'skills': {'read_only': True}
         }
+    
+    def validate_skills_list(self, value):
+        """Validate skills list using custom validator."""
+        if value:
+            validate_skills_list(value)
+        return value
     
     def create(self, validated_data):
         skills_list = validated_data.pop('skills_list', None)
@@ -131,6 +156,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for user registration with validation.
     """
+    email = ValidatedEmailField(required=True)
+    username = SanitizedCharField(required=True, validators=[username_validator])
+    first_name = SanitizedCharField(required=True, max_length=150)
+    last_name = SanitizedCharField(required=True, max_length=150)
     password = serializers.CharField(
         write_only=True,
         min_length=8,
@@ -147,12 +176,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'email', 'username', 'first_name', 'last_name', 
             'password', 'confirm_password'
         )
-        extra_kwargs = {
-            'email': {'required': True},
-            'username': {'required': True},
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-        }
     
     def validate_email(self, value):
         """Validate that email is unique."""

@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.common.audit.AuditLoggingMiddleware',
+    'apps.common.throttling.RateLimitMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -157,6 +159,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'apps.common.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '1000/hour',
+        'login': '5/minute',
+        'register': '3/minute',
+    }
 }
 
 # JWT Settings
@@ -190,12 +203,86 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Next.js default port
-    "http://127.0.0.1:3000",
-]
+CORS_ALLOWED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Additional CORS settings for security
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL_ORIGINS', default=False, cast=bool)
+CORS_ALLOWED_ORIGIN_REGEXES = []
+
+# Allowed headers for CORS requests
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Allowed methods for CORS requests
+CORS_ALLOWED_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Preflight cache time
+CORS_PREFLIGHT_MAX_AGE = 86400  # 24 hours
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+# X-Frame-Options
+X_FRAME_OPTIONS = 'DENY'
+
+# Content Security Policy
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:", "https:")
+CSP_FONT_SRC = ("'self'", "https:")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+
+# Session Security
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 3600  # 1 hour
+
+# CSRF Protection
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:3000,http://127.0.0.1:3000',
+    cast=lambda v: [s.strip() for s in v.split(',')]
+)
+
+# HTTPS Settings (for production)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Additional Security Headers
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 
 # API Documentation
 SPECTACULAR_SETTINGS = {
@@ -312,6 +399,14 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        'audit': {
+            'format': '{asctime} AUDIT {message}',
+            'style': '{',
+        },
+        'security': {
+            'format': '{asctime} SECURITY {levelname} {message}',
+            'style': '{',
+        },
     },
     'handlers': {
         'file': {
@@ -325,6 +420,18 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
         },
+        'audit_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'audit.log',
+            'formatter': 'audit',
+        },
+        'security_file': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'formatter': 'security',
+        },
     },
     'root': {
         'handlers': ['console', 'file'],
@@ -334,6 +441,21 @@ LOGGING = {
         'django': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
+            'propagate': False,
+        },
+        'audit': {
+            'handlers': ['audit_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'WARNING',
             'propagate': False,
         },
     },

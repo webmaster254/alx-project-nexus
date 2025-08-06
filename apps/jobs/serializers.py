@@ -4,6 +4,11 @@ from django.utils import timezone
 from decimal import Decimal
 from .models import Job, Company
 from apps.categories.models import Industry, JobType, Category
+from apps.common.validators import (
+    SanitizedCharField, SanitizedTextField, ValidatedEmailField, 
+    ValidatedURLField, phone_validator, salary_validator,
+    validate_salary_range, validate_skills_list
+)
 
 User = get_user_model()
 
@@ -13,6 +18,17 @@ class CompanySerializer(serializers.ModelSerializer):
     Serializer for Company model with basic information.
     """
     job_count = serializers.ReadOnlyField()
+    name = SanitizedCharField(max_length=200)
+    description = SanitizedTextField(required=False, allow_blank=True)
+    website = ValidatedURLField(required=False, allow_blank=True)
+    email = ValidatedEmailField(required=False, allow_blank=True)
+    phone = SanitizedCharField(
+        max_length=20, 
+        required=False, 
+        allow_blank=True,
+        validators=[phone_validator]
+    )
+    address = SanitizedCharField(max_length=500, required=False, allow_blank=True)
     
     class Meta:
         model = Company
@@ -113,6 +129,27 @@ class JobSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField(read_only=True)
     updated_by = serializers.StringRelatedField(read_only=True)
     
+    # Validated input fields
+    title = SanitizedCharField(max_length=200)
+    description = SanitizedTextField()
+    summary = SanitizedCharField(max_length=500, required=False, allow_blank=True)
+    location = SanitizedCharField(max_length=200)
+    external_url = ValidatedURLField(required=False, allow_blank=True)
+    salary_min = serializers.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        required=False, 
+        allow_null=True,
+        validators=[salary_validator]
+    )
+    salary_max = serializers.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        required=False, 
+        allow_null=True,
+        validators=[salary_validator]
+    )
+    
     # Write-only fields for relationships
     company_id = serializers.IntegerField(write_only=True)
     industry_id = serializers.IntegerField(write_only=True)
@@ -126,13 +163,13 @@ class JobSerializer(serializers.ModelSerializer):
     
     # Skills as lists for easier frontend handling
     required_skills_list = serializers.ListField(
-        child=serializers.CharField(max_length=50),
+        child=SanitizedCharField(max_length=50),
         write_only=True,
         required=False,
         help_text="List of required skills"
     )
     preferred_skills_list = serializers.ListField(
-        child=serializers.CharField(max_length=50),
+        child=SanitizedCharField(max_length=50),
         write_only=True,
         required=False,
         help_text="List of preferred skills"
@@ -232,44 +269,28 @@ class JobSerializer(serializers.ModelSerializer):
         return value
     
     def validate_required_skills_list(self, value):
-        """Validate required skills list."""
-        if not value:
-            return value
-        
-        # Remove empty strings and duplicates
-        skills = [skill.strip() for skill in value if skill.strip()]
-        unique_skills = list(dict.fromkeys(skills))  # Preserve order while removing duplicates
-        
-        if len(unique_skills) > 20:
-            raise serializers.ValidationError("Maximum 20 required skills are allowed.")
-        
-        return unique_skills
+        """Validate required skills list using custom validator."""
+        if value:
+            validate_skills_list(value)
+        return value
     
     def validate_preferred_skills_list(self, value):
-        """Validate preferred skills list."""
-        if not value:
-            return value
-        
-        # Remove empty strings and duplicates
-        skills = [skill.strip() for skill in value if skill.strip()]
-        unique_skills = list(dict.fromkeys(skills))  # Preserve order while removing duplicates
-        
-        if len(unique_skills) > 20:
-            raise serializers.ValidationError("Maximum 20 preferred skills are allowed.")
-        
-        return unique_skills
+        """Validate preferred skills list using custom validator."""
+        if value:
+            validate_skills_list(value)
+        return value
     
     def validate(self, attrs):
         """Cross-field validation for job data."""
-        # Validate salary range
+        # Validate salary range using custom validator
         salary_min = attrs.get('salary_min')
         salary_max = attrs.get('salary_max')
         
-        if salary_min and salary_max:
-            if salary_min > salary_max:
-                raise serializers.ValidationError({
-                    'salary_min': 'Minimum salary cannot be greater than maximum salary.'
-                })
+        if salary_min or salary_max:
+            try:
+                validate_salary_range(salary_min, salary_max)
+            except serializers.ValidationError as e:
+                raise serializers.ValidationError({'salary_range': str(e)})
         
         # Validate that at least one salary value is provided if salary_type is specified
         salary_type = attrs.get('salary_type')

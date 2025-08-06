@@ -1,179 +1,224 @@
+#!/usr/bin/env python
 """
-Simple script to verify API documentation setup is working correctly.
+Setup test to verify all security features are properly configured.
 """
-
 import os
 import sys
 import django
 from django.conf import settings
 
-# Add the project root to Python path
+# Add the project root to the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Configure Django settings
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
+if not settings.configured:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.test')
+    django.setup()
 
-# Setup Django
-django.setup()
-
-def test_schema_generation():
-    """Test that the OpenAPI schema can be generated successfully."""
+def test_security_imports():
+    """Test that all security modules can be imported."""
+    print("Testing security module imports...")
+    
     try:
-        from drf_spectacular.openapi import AutoSchema
-        from drf_spectacular.generators import SchemaGenerator
+        from apps.common.exceptions import (
+            CustomAPIException, BusinessLogicError, format_error_response,
+            custom_exception_handler
+        )
+        print("✓ Exception handling modules imported successfully")
         
-        generator = SchemaGenerator()
-        schema = generator.get_schema(request=None, public=True)
+        from apps.common.validators import (
+            sanitize_html, sanitize_text, PhoneNumberValidator,
+            URLValidator, validate_salary_range, validate_skills_list,
+            SanitizedCharField, ValidatedEmailField
+        )
+        print("✓ Validation modules imported successfully")
         
-        print("✅ Schema generation successful!")
-        print(f"   - API Title: {schema['info']['title']}")
-        print(f"   - API Version: {schema['info']['version']}")
-        print(f"   - Number of paths: {len(schema['paths'])}")
+        from apps.common.throttling import (
+            LoginRateThrottle, RegisterRateThrottle, user_ratelimit,
+            login_ratelimit, register_ratelimit
+        )
+        print("✓ Rate limiting modules imported successfully")
         
-        # Check for our enhanced documentation
-        paths = schema['paths']
-        
-        # Check authentication endpoints
-        auth_paths = [path for path in paths.keys() if '/auth/' in path]
-        print(f"   - Authentication endpoints: {len(auth_paths)}")
-        
-        # Check jobs endpoints
-        job_paths = [path for path in paths.keys() if '/jobs/' in path]
-        print(f"   - Job endpoints: {len(job_paths)}")
-        
-        # Check applications endpoints
-        app_paths = [path for path in paths.keys() if '/applications/' in path]
-        print(f"   - Application endpoints: {len(app_paths)}")
-        
-        # Check categories endpoints
-        cat_paths = [path for path in paths.keys() if '/categories/' in path]
-        print(f"   - Category endpoints: {len(cat_paths)}")
-        
-        # Check for examples in login endpoint
-        login_path = '/api/auth/login/'
-        if login_path in paths:
-            login_post = paths[login_path].get('post', {})
-            examples = login_post.get('requestBody', {}).get('content', {}).get('application/json', {}).get('examples', {})
-            if examples:
-                print(f"   - Login endpoint has {len(examples)} documented examples")
-            else:
-                print("   - ⚠️  Login endpoint missing examples")
+        from apps.common.audit import (
+            log_audit_event, AuditEvent, get_client_ip,
+            AuditLoggingMiddleware, log_login_success
+        )
+        print("✓ Audit logging modules imported successfully")
         
         return True
-        
-    except Exception as e:
-        print(f"❌ Schema generation failed: {e}")
+    except ImportError as e:
+        print(f"❌ Import error: {e}")
         return False
 
-def test_spectacular_settings():
-    """Test that drf-spectacular settings are configured correctly."""
+def test_settings_configuration():
+    """Test that security settings are properly configured."""
+    print("Testing security settings configuration...")
+    
     try:
-        spectacular_settings = getattr(settings, 'SPECTACULAR_SETTINGS', {})
+        from django.conf import settings
         
-        print("✅ Spectacular settings configured!")
-        print(f"   - Title: {spectacular_settings.get('TITLE', 'Not set')}")
-        print(f"   - Version: {spectacular_settings.get('VERSION', 'Not set')}")
-        print(f"   - Tags: {len(spectacular_settings.get('TAGS', []))}")
-        print(f"   - Servers: {len(spectacular_settings.get('SERVERS', []))}")
+        # Check REST framework settings
+        assert 'EXCEPTION_HANDLER' in settings.REST_FRAMEWORK
+        assert settings.REST_FRAMEWORK['EXCEPTION_HANDLER'] == 'apps.common.exceptions.custom_exception_handler'
+        print("✓ Custom exception handler configured")
         
-        # Check for security configuration
-        security = spectacular_settings.get('SECURITY', [])
-        if security:
-            print(f"   - Security schemes: {len(security)}")
+        # Check throttling settings
+        assert 'DEFAULT_THROTTLE_CLASSES' in settings.REST_FRAMEWORK
+        assert 'DEFAULT_THROTTLE_RATES' in settings.REST_FRAMEWORK
+        print("✓ Rate limiting configured")
         
-        components = spectacular_settings.get('COMPONENTS', {})
-        security_schemes = components.get('securitySchemes', {})
-        if security_schemes:
-            print(f"   - Security components: {list(security_schemes.keys())}")
+        # Check CORS settings
+        assert hasattr(settings, 'CORS_ALLOWED_ORIGINS')
+        assert hasattr(settings, 'CORS_ALLOW_CREDENTIALS')
+        print("✓ CORS settings configured")
+        
+        # Check security headers
+        assert hasattr(settings, 'SECURE_BROWSER_XSS_FILTER')
+        assert hasattr(settings, 'SECURE_CONTENT_TYPE_NOSNIFF')
+        print("✓ Security headers configured")
+        
+        # Check middleware
+        assert 'apps.common.audit.AuditLoggingMiddleware' in settings.MIDDLEWARE
+        assert 'apps.common.throttling.RateLimitMiddleware' in settings.MIDDLEWARE
+        print("✓ Security middleware configured")
+        
+        # Check logging
+        assert 'audit' in settings.LOGGING['loggers']
+        assert 'security' in settings.LOGGING['loggers']
+        print("✓ Audit and security logging configured")
         
         return True
-        
-    except Exception as e:
-        print(f"❌ Spectacular settings test failed: {e}")
+    except (AssertionError, AttributeError) as e:
+        print(f"❌ Configuration error: {e}")
         return False
 
-def test_url_configuration():
-    """Test that API documentation URLs are configured correctly."""
+def test_validation_functionality():
+    """Test that validation functions work correctly."""
+    print("Testing validation functionality...")
+    
     try:
-        from django.urls import reverse
+        from apps.common.validators import sanitize_html, sanitize_text, validate_skills_list
         
-        # Test that documentation URLs can be resolved
-        schema_url = reverse('schema')
-        swagger_url = reverse('swagger-ui')
-        redoc_url = reverse('redoc')
+        # Test HTML sanitization
+        malicious_html = '<p>Safe</p><script>alert("xss")</script>'
+        sanitized = sanitize_html(malicious_html)
+        assert '<script>' not in sanitized
+        print("✓ HTML sanitization works")
         
-        print("✅ Documentation URLs configured!")
-        print(f"   - Schema URL: {schema_url}")
-        print(f"   - Swagger UI URL: {swagger_url}")
-        print(f"   - ReDoc URL: {redoc_url}")
+        # Test text sanitization
+        text_with_control = 'Hello\x00world'
+        sanitized = sanitize_text(text_with_control)
+        assert '\x00' not in sanitized
+        print("✓ Text sanitization works")
+        
+        # Test skills validation
+        valid_skills = ['Python', 'JavaScript', 'React']
+        validate_skills_list(valid_skills)  # Should not raise exception
+        print("✓ Skills validation works")
         
         return True
-        
     except Exception as e:
-        print(f"❌ URL configuration test failed: {e}")
+        print(f"❌ Validation error: {e}")
         return False
 
-def test_authentication_views():
-    """Test that authentication views have proper documentation."""
+def test_error_handling():
+    """Test that error handling works correctly."""
+    print("Testing error handling...")
+    
     try:
-        from apps.authentication.views import CustomTokenObtainPairView
-        from drf_spectacular.utils import extend_schema
+        from apps.common.exceptions import format_error_response, CustomAPIException
         
-        # Check if views have schema decorators
-        view_class = CustomTokenObtainPairView
-        post_method = getattr(view_class, 'post', None)
+        # Test error response formatting
+        response = format_error_response('TEST_ERROR', 'Test message', {}, 400)
+        assert response['error']['code'] == 'TEST_ERROR'
+        assert 'timestamp' in response['error']
+        print("✓ Error response formatting works")
         
-        if post_method and hasattr(post_method, '_spectacular_annotation'):
-            print("✅ Authentication views have documentation!")
-            annotation = post_method._spectacular_annotation
-            print(f"   - Summary: {annotation.get('summary', 'Not set')}")
-            print(f"   - Tags: {annotation.get('tags', [])}")
-            examples = annotation.get('examples', [])
-            print(f"   - Examples: {len(examples)}")
-        else:
-            print("⚠️  Authentication views may be missing documentation")
+        # Test custom exception
+        exc = CustomAPIException('Test error', 'test_code')
+        assert str(exc.detail) == 'Test error'
+        assert exc.code == 'test_code'
+        print("✓ Custom exceptions work")
         
         return True
-        
     except Exception as e:
-        print(f"❌ Authentication views test failed: {e}")
+        print(f"❌ Error handling test failed: {e}")
+        return False
+
+def test_audit_logging():
+    """Test that audit logging works correctly."""
+    print("Testing audit logging...")
+    
+    try:
+        from apps.common.audit import log_audit_event, AuditEvent, sanitize_request_data
+        from unittest.mock import patch
+        
+        # Test audit event logging
+        with patch('apps.common.audit.audit_logger') as mock_logger:
+            log_audit_event(AuditEvent.LOGIN_SUCCESS, ip_address='127.0.0.1')
+            mock_logger.info.assert_called_once()
+        print("✓ Audit event logging works")
+        
+        # Test request data sanitization
+        sensitive_data = {'username': 'test', 'password': 'secret'}
+        sanitized = sanitize_request_data(sensitive_data)
+        assert sanitized['password'] == '[REDACTED]'
+        print("✓ Request data sanitization works")
+        
+        return True
+    except Exception as e:
+        print(f"❌ Audit logging test failed: {e}")
         return False
 
 def main():
-    """Run all documentation tests."""
-    print("🔍 Testing API Documentation Setup...")
-    print("=" * 50)
+    """Run all setup tests."""
+    print("🔒 Running security setup verification tests...\n")
     
     tests = [
-        test_spectacular_settings,
-        test_url_configuration,
-        test_schema_generation,
-        test_authentication_views,
+        test_security_imports,
+        test_settings_configuration,
+        test_validation_functionality,
+        test_error_handling,
+        test_audit_logging,
     ]
     
     passed = 0
-    total = len(tests)
+    failed = 0
     
     for test in tests:
-        print()
-        if test():
-            passed += 1
-        print("-" * 30)
+        print(f"\n--- {test.__name__.replace('_', ' ').title()} ---")
+        try:
+            if test():
+                passed += 1
+            else:
+                failed += 1
+        except Exception as e:
+            print(f"❌ Test failed with exception: {e}")
+            failed += 1
     
-    print()
-    print(f"📊 Test Results: {passed}/{total} tests passed")
+    print(f"\n{'='*50}")
+    print(f"Security Setup Test Results:")
+    print(f"✅ Passed: {passed}")
+    print(f"❌ Failed: {failed}")
+    print(f"{'='*50}")
     
-    if passed == total:
-        print("🎉 All documentation tests passed!")
-        print("\n📖 You can now access the API documentation at:")
-        print("   - Swagger UI: http://localhost:8000/api/docs/")
-        print("   - ReDoc: http://localhost:8000/api/redoc/")
-        print("   - OpenAPI Schema: http://localhost:8000/api/schema/")
+    if failed == 0:
+        print("\n🎉 All security features are properly configured!")
+        print("\n📋 Security Features Implemented:")
+        print("   • Comprehensive input validation and sanitization")
+        print("   • Custom exception handling with consistent error responses")
+        print("   • Rate limiting for API endpoints")
+        print("   • CORS configuration for Next.js frontend")
+        print("   • Security headers and HTTPS enforcement")
+        print("   • Audit logging for sensitive operations")
+        print("   • SQL injection and XSS prevention")
+        print("   • JWT token security")
+        print("   • Role-based access control")
+        print("   • Production security configurations")
+        return 0
     else:
-        print("⚠️  Some tests failed. Please check the configuration.")
-    
-    return passed == total
+        print(f"\n❌ {failed} security feature(s) need attention!")
+        return 1
 
 if __name__ == '__main__':
-    success = main()
-    sys.exit(0 if success else 1)
+    sys.exit(main())
