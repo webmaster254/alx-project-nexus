@@ -32,3 +32,71 @@ WARNING 2025-08-06 02:03:00,912 log 415840 140205806469184 Forbidden: /api/jobs/
 WARNING 2025-08-06 02:05:43,734 log 416903 140632703029312 Forbidden: /api/jobs/jobs/38/
 WARNING 2025-08-06 02:28:42,971 log 428119 140148548902976 Not Found: /api/jobs/jobs/similar/
 WARNING 2025-08-06 02:28:42,974 log 428119 140148548902976 Bad Request: /api/jobs/jobs/similar/
+INFO 2025-08-06 02:53:47,326 autoreload 439393 139882072100928 Watching for file changes with StatReloader
+ERROR 2025-08-06 02:54:00,681 log 439393 139881917445824 Internal Server Error: /api/categories/
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/urls/base.py", line 71, in reverse
+    extra, resolver = resolver.namespace_dict[ns]
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^
+KeyError: 'djdt'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/debug_toolbar/middleware.py", line 145, in __call__
+    return self._postprocess(request, response, toolbar)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/debug_toolbar/middleware.py", line 187, in _postprocess
+    rendered = toolbar.render_toolbar()
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/debug_toolbar/toolbar.py", line 93, in render_toolbar
+    return render_to_string("debug_toolbar/base.html", context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/test/utils.py", line 112, in instrumented_test_render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 321, in render
+    return nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/defaulttags.py", line 471, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/urls/base.py", line 82, in reverse
+    raise NoReverseMatch("%s is not a registered namespace" % key)
+django.urls.exceptions.NoReverseMatch: 'djdt' is not a registered namespace
+ERROR 2025-08-06 02:54:00,687 basehttp 439393 139881917445824 "GET /api/categories/ HTTP/1.1" 500 153640
+INFO 2025-08-06 02:54:00,689 basehttp 439393 139881917445824 - Broken pipe from ('127.0.0.1', 43374)
+INFO 2025-08-06 02:57:13,473 autoreload 440995 139733086294080 Watching for file changes with StatReloader
+WARNING 2025-08-06 02:57:31,933 log 440995 139732931573440 Unauthorized: /api/categories/
+WARNING 2025-08-06 02:57:31,934 basehttp 440995 139732931573440 "GET /api/categories/ HTTP/1.1" 401 58
+INFO 2025-08-06 02:57:53,334 basehttp 440995 139732931573440 "GET /api/docs/ HTTP/1.1" 200 4646

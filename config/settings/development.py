@@ -10,13 +10,13 @@ DEBUG = True
 # The database configuration is already set in base.py
 
 # Add debug toolbar for development
-INSTALLED_APPS += [
-    'debug_toolbar',
-]
+# INSTALLED_APPS += [
+#     'debug_toolbar',
+# ]
 
-MIDDLEWARE += [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-]
+# MIDDLEWARE += [
+#     'debug_toolbar.middleware.DebugToolbarMiddleware',
+# ]
 
 # Debug toolbar configuration
 INTERNAL_IPS = [

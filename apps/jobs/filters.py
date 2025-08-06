@@ -47,6 +47,9 @@ class JobFilter(filters.FilterSet):
         conjoined=False  # OR logic - job matches if it has ANY of the specified categories
     )
     category_slug = filters.CharFilter(method='filter_by_category_slug')
+    category_slugs = filters.CharFilter(method='filter_by_category_slugs')
+    category_hierarchy = filters.NumberFilter(method='filter_by_category_hierarchy')
+    category_tree = filters.CharFilter(method='filter_by_category_tree')
     
     # Remote work filtering
     is_remote = filters.BooleanFilter()
@@ -101,6 +104,66 @@ class JobFilter(filters.FilterSet):
     def filter_by_category_slug(self, queryset, name, value):
         """Filter jobs by category slug."""
         return queryset.filter(categories__slug=value)
+    
+    def filter_by_category_slugs(self, queryset, name, value):
+        """Filter jobs by multiple category slugs (comma-separated)."""
+        if not value:
+            return queryset
+        
+        slugs = [slug.strip() for slug in value.split(',') if slug.strip()]
+        if not slugs:
+            return queryset
+        
+        return queryset.filter(categories__slug__in=slugs).distinct()
+    
+    def filter_by_category_hierarchy(self, queryset, name, value):
+        """Filter jobs by category hierarchy (includes all descendant categories)."""
+        try:
+            category = Category.objects.get(id=value, is_active=True)
+            # Get all descendant categories
+            descendant_categories = [category] + category.get_descendants()
+            return queryset.filter(categories__in=descendant_categories).distinct()
+        except Category.DoesNotExist:
+            return queryset.none()
+    
+    def filter_by_category_tree(self, queryset, name, value):
+        """Filter jobs by category tree path (e.g., 'technology/software-development')."""
+        if not value:
+            return queryset
+        
+        # Split the path and find the deepest category
+        path_parts = [part.strip() for part in value.split('/') if part.strip()]
+        if not path_parts:
+            return queryset
+        
+        try:
+            # Start with root categories
+            current_category = None
+            for i, slug in enumerate(path_parts):
+                if i == 0:
+                    # Find root category
+                    current_category = Category.objects.get(
+                        slug=slug, 
+                        parent__isnull=True, 
+                        is_active=True
+                    )
+                else:
+                    # Find child category
+                    current_category = Category.objects.get(
+                        slug=slug, 
+                        parent=current_category, 
+                        is_active=True
+                    )
+            
+            if current_category:
+                # Get all descendant categories
+                descendant_categories = [current_category] + current_category.get_descendants()
+                return queryset.filter(categories__in=descendant_categories).distinct()
+            
+        except Category.DoesNotExist:
+            pass
+        
+        return queryset.none()
     
     def filter_remote_friendly(self, queryset, name, value):
         """
@@ -213,7 +276,12 @@ class CategoryHierarchyFilter(BaseFilterBackend):
     """
     
     def filter_queryset(self, request, queryset, view):
-        category_id = request.query_params.get('category_hierarchy')
+        # Handle both Django and DRF requests
+        if hasattr(request, 'query_params'):
+            category_id = request.query_params.get('category_hierarchy')
+        else:
+            category_id = request.GET.get('category_hierarchy')
+            
         if not category_id:
             return queryset
         
