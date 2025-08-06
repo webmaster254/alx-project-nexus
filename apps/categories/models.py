@@ -48,10 +48,7 @@ class Industry(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs in this industry."""
-        try:
-            return self.job_set.filter(is_active=True).count()
-        except AttributeError:
-            return 0
+        return self.jobs.filter(is_active=True).count()
 
 
 class JobType(models.Model):
@@ -116,10 +113,7 @@ class JobType(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs of this type."""
-        try:
-            return self.job_set.filter(is_active=True).count()
-        except AttributeError:
-            return 0
+        return self.jobs.filter(is_active=True).count()
 
 
 class Category(models.Model):
@@ -279,18 +273,15 @@ class Category(models.Model):
     @property
     def job_count(self):
         """Return the number of active jobs in this category and its descendants."""
-        try:
-            # Count jobs directly in this category
-            direct_count = self.job_set.filter(is_active=True).count()
-            
-            # Count jobs in descendant categories
-            descendant_count = 0
-            for descendant in self.get_descendants():
-                descendant_count += descendant.job_set.filter(is_active=True).count()
-            
-            return direct_count + descendant_count
-        except AttributeError:
-            return 0
+        # Count jobs directly in this category
+        direct_count = self.jobs.filter(is_active=True).count()
+        
+        # Count jobs in descendant categories
+        descendant_count = 0
+        for descendant in self.get_descendants():
+            descendant_count += descendant.jobs.filter(is_active=True).count()
+        
+        return direct_count + descendant_count
 
     @property
     def full_path(self):

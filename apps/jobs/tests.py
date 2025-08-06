@@ -158,9 +158,9 @@ class CompanyModelTest(TestCase):
         self.assertEqual(company.get_absolute_url(), expected_url)
 
     def test_job_count_property(self):
-        """Test job_count property (will be 0 until Job model is implemented)."""
+        """Test job_count property with Job model implemented."""
         company = Company.objects.create(name='Test Company')
-        # Since Job model isn't implemented yet, this should return 0
+        # Should return 0 when no jobs exist
         self.assertEqual(company.job_count, 0)
 
     def test_is_active_field(self):
@@ -199,3 +199,464 @@ class CompanyModelTest(TestCase):
         
         with self.assertRaises(ValidationError):
             company.full_clean()
+
+
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
+from decimal import Decimal
+from apps.categories.models import Industry, JobType, Category
+from .models import Job
+
+User = get_user_model()
+
+
+class JobModelTest(TestCase):
+    """Test cases for the Job model."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Create test user
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        
+        # Create test company
+        self.company = Company.objects.create(
+            name='Test Company',
+            description='A test company'
+        )
+        
+        # Create test industry
+        self.industry = Industry.objects.create(
+            name='Technology',
+            description='Technology industry'
+        )
+        
+        # Create test job type
+        self.job_type = JobType.objects.create(
+            name='Full-time',
+            code='full-time',
+            description='Full-time employment'
+        )
+        
+        # Create test categories
+        self.category1 = Category.objects.create(
+            name='Software Development',
+            description='Software development jobs'
+        )
+        self.category2 = Category.objects.create(
+            name='Backend Development',
+            description='Backend development jobs',
+            parent=self.category1
+        )
+        
+        # Base job data
+        self.job_data = {
+            'title': 'Senior Software Engineer',
+            'description': 'We are looking for a senior software engineer...',
+            'summary': 'Senior software engineer position',
+            'company': self.company,
+            'location': 'San Francisco, CA',
+            'salary_min': Decimal('80000.00'),
+            'salary_max': Decimal('120000.00'),
+            'salary_type': 'yearly',
+            'salary_currency': 'USD',
+            'job_type': self.job_type,
+            'industry': self.industry,
+            'experience_level': 'senior',
+            'required_skills': 'Python, Django, PostgreSQL',
+            'preferred_skills': 'React, Docker, AWS',
+            'created_by': self.user
+        }
+
+    def test_create_job_with_all_fields(self):
+        """Test creating a job with all fields."""
+        future_date = timezone.now() + timedelta(days=30)
+        job_data = self.job_data.copy()
+        job_data.update({
+            'is_remote': True,
+            'application_deadline': future_date,
+            'external_url': 'https://company.com/apply',
+            'is_featured': True
+        })
+        
+        job = Job.objects.create(**job_data)
+        job.categories.add(self.category1, self.category2)
+        
+        self.assertEqual(job.title, 'Senior Software Engineer')
+        self.assertEqual(job.description, 'We are looking for a senior software engineer...')
+        self.assertEqual(job.summary, 'Senior software engineer position')
+        self.assertEqual(job.company, self.company)
+        self.assertEqual(job.location, 'San Francisco, CA')
+        self.assertTrue(job.is_remote)
+        self.assertEqual(job.salary_min, Decimal('80000.00'))
+        self.assertEqual(job.salary_max, Decimal('120000.00'))
+        self.assertEqual(job.salary_type, 'yearly')
+        self.assertEqual(job.salary_currency, 'USD')
+        self.assertEqual(job.job_type, self.job_type)
+        self.assertEqual(job.industry, self.industry)
+        self.assertEqual(job.experience_level, 'senior')
+        self.assertEqual(job.required_skills, 'Python, Django, PostgreSQL')
+        self.assertEqual(job.preferred_skills, 'React, Docker, AWS')
+        self.assertEqual(job.application_deadline, future_date)
+        self.assertEqual(job.external_url, 'https://company.com/apply')
+        self.assertTrue(job.is_active)
+        self.assertTrue(job.is_featured)
+        self.assertEqual(job.views_count, 0)
+        self.assertEqual(job.applications_count, 0)
+        self.assertEqual(job.created_by, self.user)
+        self.assertIsNotNone(job.created_at)
+        self.assertIsNotNone(job.updated_at)
+        self.assertIn(self.category1, job.categories.all())
+        self.assertIn(self.category2, job.categories.all())
+
+    def test_create_job_minimal_fields(self):
+        """Test creating a job with only required fields."""
+        minimal_data = {
+            'title': 'Software Engineer',
+            'description': 'Software engineer position',
+            'company': self.company,
+            'location': 'Remote',
+            'job_type': self.job_type,
+            'industry': self.industry,
+            'created_by': self.user
+        }
+        
+        job = Job.objects.create(**minimal_data)
+        
+        self.assertEqual(job.title, 'Software Engineer')
+        self.assertEqual(job.description, 'Software engineer position')
+        self.assertEqual(job.company, self.company)
+        self.assertEqual(job.location, 'Remote')
+        self.assertEqual(job.job_type, self.job_type)
+        self.assertEqual(job.industry, self.industry)
+        self.assertEqual(job.created_by, self.user)
+        self.assertEqual(job.experience_level, 'mid')  # default value
+        self.assertEqual(job.salary_type, 'yearly')  # default value
+        self.assertEqual(job.salary_currency, 'USD')  # default value
+        self.assertTrue(job.is_active)  # default value
+        self.assertFalse(job.is_featured)  # default value
+        self.assertFalse(job.is_remote)  # default value
+
+    def test_job_title_max_length(self):
+        """Test job title max length validation."""
+        long_title = 'A' * 201  # Exceeds max_length of 200
+        job_data = self.job_data.copy()
+        job_data['title'] = long_title
+        job = Job(**job_data)
+        
+        with self.assertRaises(ValidationError):
+            job.full_clean()
+
+    def test_job_location_max_length(self):
+        """Test job location max length validation."""
+        long_location = 'A' * 201  # Exceeds max_length of 200
+        job_data = self.job_data.copy()
+        job_data['location'] = long_location
+        job = Job(**job_data)
+        
+        with self.assertRaises(ValidationError):
+            job.full_clean()
+
+    def test_salary_validation_min_greater_than_max(self):
+        """Test salary validation when min is greater than max."""
+        job_data = self.job_data.copy()
+        job_data['salary_min'] = Decimal('120000.00')
+        job_data['salary_max'] = Decimal('80000.00')
+        job = Job(**job_data)
+        
+        with self.assertRaises(ValidationError):
+            job.full_clean()
+
+    def test_salary_validation_negative_values(self):
+        """Test salary validation with negative values."""
+        job_data = self.job_data.copy()
+        job_data['salary_min'] = Decimal('-1000.00')
+        job = Job(**job_data)
+        
+        with self.assertRaises(ValidationError):
+            job.full_clean()
+
+    def test_application_deadline_validation_past_date(self):
+        """Test application deadline validation with past date."""
+        past_date = timezone.now() - timedelta(days=1)
+        job_data = self.job_data.copy()
+        job_data['application_deadline'] = past_date
+        job = Job(**job_data)
+        
+        with self.assertRaises(ValidationError):
+            job.full_clean()
+
+    def test_application_deadline_validation_future_date(self):
+        """Test application deadline validation with future date."""
+        future_date = timezone.now() + timedelta(days=30)
+        job_data = self.job_data.copy()
+        job_data['application_deadline'] = future_date
+        job = Job(**job_data)
+        
+        try:
+            job.full_clean()
+        except ValidationError:
+            self.fail("Future application deadline should be valid")
+
+    def test_str_representation(self):
+        """Test string representation of job."""
+        job = Job.objects.create(**self.job_data)
+        expected_str = f"{job.title} at {job.company.name}"
+        self.assertEqual(str(job), expected_str)
+
+    def test_get_absolute_url(self):
+        """Test get_absolute_url method."""
+        job = Job.objects.create(**self.job_data)
+        expected_url = f"/jobs/{job.pk}/"
+        self.assertEqual(job.get_absolute_url(), expected_url)
+
+    def test_get_salary_display_full_range(self):
+        """Test get_salary_display with full salary range."""
+        job = Job.objects.create(**self.job_data)
+        expected_display = "$80,000 - $120,000 yearly"
+        self.assertEqual(job.get_salary_display(), expected_display)
+
+    def test_get_salary_display_min_only(self):
+        """Test get_salary_display with minimum salary only."""
+        job_data = self.job_data.copy()
+        job_data['salary_max'] = None
+        job = Job.objects.create(**job_data)
+        expected_display = "From $80,000 yearly"
+        self.assertEqual(job.get_salary_display(), expected_display)
+
+    def test_get_salary_display_max_only(self):
+        """Test get_salary_display with maximum salary only."""
+        job_data = self.job_data.copy()
+        job_data['salary_min'] = None
+        job = Job.objects.create(**job_data)
+        expected_display = "Up to $120,000 yearly"
+        self.assertEqual(job.get_salary_display(), expected_display)
+
+    def test_get_salary_display_no_salary(self):
+        """Test get_salary_display with no salary information."""
+        job_data = self.job_data.copy()
+        job_data['salary_min'] = None
+        job_data['salary_max'] = None
+        job = Job.objects.create(**job_data)
+        expected_display = "Salary not specified"
+        self.assertEqual(job.get_salary_display(), expected_display)
+
+    def test_get_salary_display_different_currency(self):
+        """Test get_salary_display with different currency."""
+        job_data = self.job_data.copy()
+        job_data['salary_currency'] = 'EUR'
+        job = Job.objects.create(**job_data)
+        expected_display = "€80,000 - €120,000 yearly"
+        self.assertEqual(job.get_salary_display(), expected_display)
+
+    def test_get_required_skills_list(self):
+        """Test get_required_skills_list method."""
+        job = Job.objects.create(**self.job_data)
+        expected_skills = ['Python', 'Django', 'PostgreSQL']
+        self.assertEqual(job.get_required_skills_list(), expected_skills)
+
+    def test_get_preferred_skills_list(self):
+        """Test get_preferred_skills_list method."""
+        job = Job.objects.create(**self.job_data)
+        expected_skills = ['React', 'Docker', 'AWS']
+        self.assertEqual(job.get_preferred_skills_list(), expected_skills)
+
+    def test_set_required_skills_list(self):
+        """Test set_required_skills_list method."""
+        job = Job.objects.create(**self.job_data)
+        new_skills = ['Java', 'Spring', 'MySQL']
+        job.set_required_skills_list(new_skills)
+        self.assertEqual(job.required_skills, 'Java, Spring, MySQL')
+        self.assertEqual(job.get_required_skills_list(), new_skills)
+
+    def test_set_preferred_skills_list(self):
+        """Test set_preferred_skills_list method."""
+        job = Job.objects.create(**self.job_data)
+        new_skills = ['Vue.js', 'Kubernetes', 'GCP']
+        job.set_preferred_skills_list(new_skills)
+        self.assertEqual(job.preferred_skills, 'Vue.js, Kubernetes, GCP')
+        self.assertEqual(job.get_preferred_skills_list(), new_skills)
+
+    def test_increment_views(self):
+        """Test increment_views method."""
+        job = Job.objects.create(**self.job_data)
+        initial_views = job.views_count
+        
+        job.increment_views()
+        job.refresh_from_db()
+        
+        self.assertEqual(job.views_count, initial_views + 1)
+
+    def test_increment_applications(self):
+        """Test increment_applications method."""
+        job = Job.objects.create(**self.job_data)
+        initial_applications = job.applications_count
+        
+        job.increment_applications()
+        job.refresh_from_db()
+        
+        self.assertEqual(job.applications_count, initial_applications + 1)
+
+    def test_is_application_deadline_passed_no_deadline(self):
+        """Test is_application_deadline_passed with no deadline."""
+        job = Job.objects.create(**self.job_data)
+        self.assertFalse(job.is_application_deadline_passed())
+
+    def test_is_application_deadline_passed_future_deadline(self):
+        """Test is_application_deadline_passed with future deadline."""
+        future_date = timezone.now() + timedelta(days=30)
+        job_data = self.job_data.copy()
+        job_data['application_deadline'] = future_date
+        job = Job.objects.create(**job_data)
+        self.assertFalse(job.is_application_deadline_passed())
+
+    def test_is_application_deadline_passed_past_deadline(self):
+        """Test is_application_deadline_passed with past deadline."""
+        # Create job first, then update deadline to past using update() to bypass validation
+        job = Job.objects.create(**self.job_data)
+        past_date = timezone.now() - timedelta(days=1)
+        Job.objects.filter(pk=job.pk).update(application_deadline=past_date)
+        job.refresh_from_db()
+        self.assertTrue(job.is_application_deadline_passed())
+
+    def test_can_apply_active_job_no_deadline(self):
+        """Test can_apply for active job with no deadline."""
+        job = Job.objects.create(**self.job_data)
+        self.assertTrue(job.can_apply())
+
+    def test_can_apply_inactive_job(self):
+        """Test can_apply for inactive job."""
+        job_data = self.job_data.copy()
+        job_data['is_active'] = False
+        job = Job.objects.create(**job_data)
+        self.assertFalse(job.can_apply())
+
+    def test_can_apply_deadline_passed(self):
+        """Test can_apply when deadline has passed."""
+        job = Job.objects.create(**self.job_data)
+        past_date = timezone.now() - timedelta(days=1)
+        # Use update() to bypass validation
+        Job.objects.filter(pk=job.pk).update(application_deadline=past_date)
+        job.refresh_from_db()
+        self.assertFalse(job.can_apply())
+
+    def test_category_names_property(self):
+        """Test category_names property."""
+        job = Job.objects.create(**self.job_data)
+        job.categories.add(self.category1, self.category2)
+        
+        expected_names = ['Software Development', 'Backend Development']
+        self.assertEqual(sorted(job.category_names), sorted(expected_names))
+
+    def test_days_since_posted_property(self):
+        """Test days_since_posted property."""
+        job = Job.objects.create(**self.job_data)
+        # Should be 0 for newly created job
+        self.assertEqual(job.days_since_posted, 0)
+
+    def test_is_new_property(self):
+        """Test is_new property."""
+        job = Job.objects.create(**self.job_data)
+        # Should be True for newly created job
+        self.assertTrue(job.is_new)
+
+    def test_is_urgent_property_no_deadline(self):
+        """Test is_urgent property with no deadline."""
+        job = Job.objects.create(**self.job_data)
+        self.assertFalse(job.is_urgent)
+
+    def test_is_urgent_property_far_deadline(self):
+        """Test is_urgent property with deadline far in future."""
+        future_date = timezone.now() + timedelta(days=30)
+        job_data = self.job_data.copy()
+        job_data['application_deadline'] = future_date
+        job = Job.objects.create(**job_data)
+        self.assertFalse(job.is_urgent)
+
+    def test_is_urgent_property_near_deadline(self):
+        """Test is_urgent property with deadline within 7 days."""
+        near_future_date = timezone.now() + timedelta(days=5)
+        job_data = self.job_data.copy()
+        job_data['application_deadline'] = near_future_date
+        job = Job.objects.create(**job_data)
+        self.assertTrue(job.is_urgent)
+
+    def test_job_relationships(self):
+        """Test job model relationships."""
+        job = Job.objects.create(**self.job_data)
+        job.categories.add(self.category1, self.category2)
+        
+        # Test company relationship
+        self.assertEqual(job.company, self.company)
+        self.assertIn(job, self.company.jobs.all())
+        
+        # Test industry relationship
+        self.assertEqual(job.industry, self.industry)
+        self.assertIn(job, self.industry.jobs.all())
+        
+        # Test job_type relationship
+        self.assertEqual(job.job_type, self.job_type)
+        self.assertIn(job, self.job_type.jobs.all())
+        
+        # Test categories relationship
+        self.assertIn(self.category1, job.categories.all())
+        self.assertIn(self.category2, job.categories.all())
+        self.assertIn(job, self.category1.jobs.all())
+        self.assertIn(job, self.category2.jobs.all())
+        
+        # Test user relationship
+        self.assertEqual(job.created_by, self.user)
+        self.assertIn(job, self.user.created_jobs.all())
+
+    def test_job_ordering(self):
+        """Test job model ordering by created_at descending."""
+        # Create jobs with slight time difference
+        job1 = Job.objects.create(title='First Job', **{k: v for k, v in self.job_data.items() if k != 'title'})
+        job2 = Job.objects.create(title='Second Job', **{k: v for k, v in self.job_data.items() if k != 'title'})
+        job3 = Job.objects.create(title='Third Job', **{k: v for k, v in self.job_data.items() if k != 'title'})
+        
+        jobs = list(Job.objects.all())
+        # Should be ordered by created_at descending (newest first)
+        self.assertEqual(jobs[0], job3)
+        self.assertEqual(jobs[1], job2)
+        self.assertEqual(jobs[2], job1)
+
+    def test_job_indexes_exist(self):
+        """Test that database indexes are properly defined."""
+        # This test verifies that the Meta.indexes are defined
+        # The actual index creation is tested during migrations
+        job_meta = Job._meta
+        index_fields = []
+        for index in job_meta.indexes:
+            index_fields.extend(index.fields)
+        
+        expected_fields = [
+            'title', 'location', 'is_active', 'created_at',
+            'company', 'industry', 'job_type'
+        ]
+        
+        for field in expected_fields:
+            self.assertIn(field, index_fields)
+
+    def test_updated_by_field(self):
+        """Test updated_by field functionality."""
+        job = Job.objects.create(**self.job_data)
+        self.assertIsNone(job.updated_by)
+        
+        # Create another user for updating
+        update_user = User.objects.create_user(
+            username='updateuser',
+            email='update@example.com',
+            password='updatepass123'
+        )
+        
+        job.updated_by = update_user
+        job.save()
+        job.refresh_from_db()
+        
+        self.assertEqual(job.updated_by, update_user)
+        self.assertIn(job, update_user.updated_jobs.all())
