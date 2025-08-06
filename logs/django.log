@@ -26,3 +26,9 @@ Traceback (most recent call last):
   File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
     raise DisallowedHost(msg)
 django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+WARNING 2025-08-06 01:55:54,639 log 412802 139898771112000 Forbidden: /api/jobs/jobs/
+WARNING 2025-08-06 02:01:03,907 log 414983 139990591922240 Forbidden: /api/jobs/jobs/34/
+WARNING 2025-08-06 02:03:00,912 log 415840 140205806469184 Forbidden: /api/jobs/jobs/36/
+WARNING 2025-08-06 02:05:43,734 log 416903 140632703029312 Forbidden: /api/jobs/jobs/38/
+WARNING 2025-08-06 02:28:42,971 log 428119 140148548902976 Not Found: /api/jobs/jobs/similar/
+WARNING 2025-08-06 02:28:42,974 log 428119 140148548902976 Bad Request: /api/jobs/jobs/similar/
