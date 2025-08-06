@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import URLValidator, MinValueValidator
 from django.utils.text import slugify
 from django.conf import settings
+from django.contrib.postgres.search import SearchVectorField
 from apps.categories.models import Industry, JobType, Category
 
 
@@ -65,6 +66,9 @@ class Company(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Full-text search vector
+    search_vector = SearchVectorField(null=True, blank=True)
 
     class Meta:
         db_table = 'company'
@@ -252,6 +256,9 @@ class Job(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Full-text search vector
+    search_vector = SearchVectorField(null=True, blank=True)
 
     class Meta:
         db_table = 'job'

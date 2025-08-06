@@ -1,0 +1,4570 @@
+openapi: 3.0.3
+info:
+  title: Job Board API
+  version: 1.0.0
+  description: "\n    A comprehensive job board backend API that provides:\n    \n\
+    \    - **Authentication**: JWT-based authentication with role-based access control\n\
+    \    - **Job Management**: Full CRUD operations for job postings with advanced\
+    \ search and filtering\n    - **Application Management**: Job application submission\
+    \ and tracking system\n    - **Category Management**: Hierarchical job categorization\
+    \ system\n    - **User Management**: User registration, profile management, and\
+    \ role-based permissions\n    \n    ## Authentication\n    \n    This API uses\
+    \ JWT (JSON Web Tokens) for authentication. To access protected endpoints:\n \
+    \   \n    1. Register a new account or login with existing credentials\n    2.\
+    \ Use the returned access token in the Authorization header: `Bearer <token>`\n\
+    \    3. Refresh tokens when they expire using the refresh endpoint\n    \n   \
+    \ ## Roles\n    \n    - **Admin**: Can create, update, and delete jobs, categories,\
+    \ and manage applications\n    - **User**: Can view jobs, apply for positions,\
+    \ and manage their own applications\n    "
+  contact:
+    name: Job Board API Support
+    email: support@jobboard.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+paths:
+  /api/applications/application-statuses/:
+    get:
+      operationId: applications_application_statuses_list
+      description: |-
+        ViewSet for managing application statuses.
+        Provides read-only access to available application statuses.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApplicationStatusListList'
+          description: ''
+  /api/applications/application-statuses/{id}/:
+    get:
+      operationId: applications_application_statuses_retrieve
+      description: |-
+        ViewSet for managing application statuses.
+        Provides read-only access to available application statuses.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Application Status.
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationStatusList'
+          description: ''
+  /api/applications/application-statuses/available/:
+    get:
+      operationId: applications_application_statuses_available_retrieve
+      description: Get all available application statuses.
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationStatusList'
+          description: ''
+  /api/applications/applications/:
+    get:
+      operationId: applications_applications_list
+      description: |-
+        ViewSet for managing job applications.
+        Provides user-specific application listing and submission functionality.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedApplicationListList'
+          description: ''
+    post:
+      operationId: applications_applications_create
+      description: Create a new job application with duplicate prevention.
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationCreate'
+          description: ''
+  /api/applications/applications/{id}/:
+    get:
+      operationId: applications_applications_retrieve
+      description: |-
+        ViewSet for managing job applications.
+        Provides user-specific application listing and submission functionality.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+    put:
+      operationId: applications_applications_update
+      description: Update application status (admin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationUpdate'
+          description: ''
+    patch:
+      operationId: applications_applications_partial_update
+      description: |-
+        ViewSet for managing job applications.
+        Provides user-specific application listing and submission functionality.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedApplicationUpdateRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationUpdate'
+          description: ''
+    delete:
+      operationId: applications_applications_destroy
+      description: |-
+        ViewSet for managing job applications.
+        Provides user-specific application listing and submission functionality.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/applications/applications/{id}/update-status/:
+    post:
+      operationId: applications_applications_update_status_create
+      description: |-
+        Update application status (admin only).
+        Dedicated endpoint for status updates with better validation.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/{id}/withdraw/:
+    post:
+      operationId: applications_applications_withdraw_create
+      description: |-
+        Withdraw an application (user action).
+        Only the application owner can withdraw their application.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/applications/applications/admin/pending/:
+    get:
+      operationId: applications_applications_admin_pending_retrieve
+      description: Get all pending applications for admin review.
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/bulk-update-status/:
+    post:
+      operationId: applications_applications_bulk_update_status_create
+      description: Bulk update status for multiple applications (admin only).
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ApplicationDetailRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/by-job/{job_id}/:
+    get:
+      operationId: applications_applications_by_job_retrieve
+      description: Get applications filtered by job (admin only).
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/by-status/{status_name}/:
+    get:
+      operationId: applications_applications_by_status_retrieve
+      description: Get applications filtered by status.
+      parameters:
+      - in: path
+        name: status_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/my-applications/:
+    get:
+      operationId: applications_applications_my_applications_retrieve
+      description: Get current user's applications.
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/applications/statistics/:
+    get:
+      operationId: applications_applications_statistics_retrieve
+      description: Get application statistics for the current user or all applications
+        (admin).
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDetail'
+          description: ''
+  /api/applications/documents/:
+    get:
+      operationId: applications_documents_list
+      description: ViewSet for managing application documents.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentList'
+          description: ''
+    post:
+      operationId: applications_documents_create
+      description: ViewSet for managing application documents.
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/applications/documents/{id}/:
+    get:
+      operationId: applications_documents_retrieve
+      description: ViewSet for managing application documents.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    put:
+      operationId: applications_documents_update
+      description: ViewSet for managing application documents.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DocumentRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    patch:
+      operationId: applications_documents_partial_update
+      description: ViewSet for managing application documents.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDocumentRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    delete:
+      operationId: applications_documents_destroy
+      description: ViewSet for managing application documents.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - applications
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/change-password/:
+    post:
+      operationId: auth_change_password_create
+      description: Change the authenticated user's password
+      summary: Change user password
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+            examples:
+              PasswordChangeExample:
+                value:
+                  old_password: currentpassword123
+                  new_password: newsecurepassword456
+                  new_password_confirm: newsecurepassword456
+                summary: Password Change Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+  /api/auth/deactivate/:
+    delete:
+      operationId: auth_deactivate_destroy
+      description: Deactivate the authenticated user's account (soft delete)
+      summary: Deactivate user account
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Account deactivated successfully
+        '401':
+          description: Authentication required
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Alternative login view using email and password.
+        Returns JWT tokens and user information.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklist refresh token to logout user
+      summary: Logout user
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '400':
+          description: Invalid request
+  /api/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Retrieve or update the authenticated user's profile information
+      summary: Get or update user profile
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved or updated successfully
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+    put:
+      operationId: auth_profile_update
+      description: Retrieve or update the authenticated user's profile information
+      summary: Get or update user profile
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+            examples:
+              ProfileUpdateExample:
+                value:
+                  first_name: John
+                  last_name: Doe
+                  phone_number: '+1234567890'
+                  bio: Experienced software developer
+                  location: San Francisco, CA
+                  experience_years: 5
+                summary: Profile Update Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserProfileRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved or updated successfully
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+    patch:
+      operationId: auth_profile_partial_update
+      description: Retrieve or update the authenticated user's profile information
+      summary: Get or update user profile
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+            examples:
+              ProfileUpdateExample:
+                value:
+                  first_name: John
+                  last_name: Doe
+                  phone_number: '+1234567890'
+                  bio: Experienced software developer
+                  location: San Francisco, CA
+                  experience_years: 5
+                summary: Profile Update Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved or updated successfully
+        '400':
+          description: Validation error
+        '401':
+          description: Authentication required
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Create a new user account with email and password
+      summary: Register new user account
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+            examples:
+              RegistrationExample:
+                value:
+                  email: newuser@example.com
+                  password: securepassword123
+                  password_confirm: securepassword123
+                  first_name: John
+                  last_name: Doe
+                summary: Registration Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Validation error
+  /api/auth/token/:
+    post:
+      operationId: auth_token_create
+      description: Authenticate user with email and password to obtain JWT tokens
+      summary: Login with email and password
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+            examples:
+              LoginExample:
+                value:
+                  email: user@example.com
+                  password: securepassword123
+                summary: Login Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPairRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: Use refresh token to obtain a new access token
+      summary: Refresh JWT access token
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+            examples:
+              RefreshTokenExample:
+                value:
+                  refresh: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                summary: Refresh Token Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Token refreshed successfully
+        '401':
+          description: Invalid or expired refresh token
+  /api/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerifyRequest'
+        required: true
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/user/:
+    get:
+      operationId: auth_user_retrieve
+      description: Retrieve the authenticated user's information including profile
+        data
+      summary: Get current user information
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+        '401':
+          description: Authentication required
+  /api/auth/verify/:
+    post:
+      operationId: auth_verify_create
+      description: Verify if a JWT token is valid and not expired
+      summary: Verify JWT token
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          description: Token is valid
+        '401':
+          description: Token is invalid or expired
+        '400':
+          description: Token not provided
+  /api/categories/categories/:
+    get:
+      operationId: categories_categories_list
+      description: Retrieve a list of all active categories with optional filtering
+        and search.
+      summary: List categories
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: parent
+        schema:
+          type: integer
+      - in: query
+        name: parent__slug
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryListList'
+          description: ''
+    post:
+      operationId: categories_categories_create
+      description: Create a new category. Admin access required.
+      summary: Create category
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/{slug}/:
+    get:
+      operationId: categories_categories_retrieve
+      description: Retrieve detailed information about a specific category by slug.
+      summary: Get category details
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: categories_categories_update
+      description: Update an existing category. Admin access required.
+      summary: Update category
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: categories_categories_partial_update
+      description: Partially update an existing category. Admin access required.
+      summary: Partially update category
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: categories_categories_destroy
+      description: Delete a category. Admin access required.
+      summary: Delete category
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/categories/categories/{slug}/ancestors/:
+    get:
+      operationId: categories_categories_ancestors_retrieve
+      description: Retrieve all ancestor categories from root to immediate parent.
+      summary: Get category ancestors
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/{slug}/children/:
+    get:
+      operationId: categories_categories_children_retrieve
+      description: Retrieve direct children of a specific category.
+      summary: Get category children
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/{slug}/job_stats/:
+    get:
+      operationId: categories_categories_job_stats_retrieve
+      description: Retrieve detailed job statistics for a specific category including
+        direct and total job counts.
+      summary: Get category job statistics
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/{slug}/jobs/:
+    get:
+      operationId: categories_categories_jobs_retrieve
+      description: Retrieve all jobs in this category and its subcategories with filtering
+        options.
+      summary: Get jobs in category
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of category name
+        required: true
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/hierarchy/:
+    get:
+      operationId: categories_categories_hierarchy_retrieve
+      description: Retrieve categories in a hierarchical structure with nested children.
+      summary: Get category hierarchy
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryHierarchy'
+          description: ''
+  /api/categories/categories/popular/:
+    get:
+      operationId: categories_categories_popular_retrieve
+      description: Retrieve categories ordered by job count (most jobs first).
+      summary: Get popular categories
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/categories/tree_with_counts/:
+    get:
+      operationId: categories_categories_tree_with_counts_retrieve
+      description: Retrieve the complete category tree with job count aggregation.
+      summary: Get category tree with job counts
+      tags:
+      - Categories
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/industries/:
+    get:
+      operationId: categories_industries_list
+      description: Retrieve a list of all active industries for job classification.
+      summary: List industries
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Industries
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIndustryList'
+          description: ''
+    post:
+      operationId: categories_industries_create
+      description: Create a new industry. Admin access required.
+      summary: Create industry
+      tags:
+      - Industries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+  /api/categories/industries/{slug}/:
+    get:
+      operationId: categories_industries_retrieve
+      description: Retrieve detailed information about a specific industry by slug.
+      summary: Get industry details
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of industry name
+        required: true
+      tags:
+      - Industries
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    put:
+      operationId: categories_industries_update
+      description: Update an existing industry. Admin access required.
+      summary: Update industry
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of industry name
+        required: true
+      tags:
+      - Industries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/IndustryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    patch:
+      operationId: categories_industries_partial_update
+      description: Partially update an existing industry. Admin access required.
+      summary: Partially update industry
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of industry name
+        required: true
+      tags:
+      - Industries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedIndustryRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+    delete:
+      operationId: categories_industries_destroy
+      description: Delete an industry. Admin access required.
+      summary: Delete industry
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of industry name
+        required: true
+      tags:
+      - Industries
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/categories/job-types/:
+    get:
+      operationId: categories_job_types_list
+      description: Retrieve a list of all active job types for employment classification.
+      summary: List job types
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - Job Types
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJobTypeList'
+          description: ''
+    post:
+      operationId: categories_job_types_create
+      description: Create a new job type. Admin access required.
+      summary: Create job type
+      tags:
+      - Job Types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobType'
+          description: ''
+  /api/categories/job-types/{slug}/:
+    get:
+      operationId: categories_job_types_retrieve
+      description: Retrieve detailed information about a specific job type by slug.
+      summary: Get job type details
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of job type name
+        required: true
+      tags:
+      - Job Types
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobType'
+          description: ''
+    put:
+      operationId: categories_job_types_update
+      description: Update an existing job type. Admin access required.
+      summary: Update job type
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of job type name
+        required: true
+      tags:
+      - Job Types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobType'
+          description: ''
+    patch:
+      operationId: categories_job_types_partial_update
+      description: Partially update an existing job type. Admin access required.
+      summary: Partially update job type
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of job type name
+        required: true
+      tags:
+      - Job Types
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJobTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedJobTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedJobTypeRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobType'
+          description: ''
+    delete:
+      operationId: categories_job_types_destroy
+      description: Delete a job type. Admin access required.
+      summary: Delete job type
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+          description: URL-friendly version of job type name
+        required: true
+      tags:
+      - Job Types
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/jobs/categories/:
+    get:
+      operationId: jobs_categories_list
+      description: ViewSet for category information (read-only).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: parent
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+  /api/jobs/categories/{id}/:
+    get:
+      operationId: jobs_categories_retrieve
+      description: ViewSet for category information (read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Category.
+        required: true
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/jobs/categories/{id}/jobs/:
+    get:
+      operationId: jobs_categories_jobs_retrieve
+      description: Get all jobs in this category and its subcategories.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Category.
+        required: true
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/jobs/companies/:
+    get:
+      operationId: jobs_companies_list
+      description: ViewSet for company information (read-only for regular users).
+      parameters:
+      - in: query
+        name: employee_count
+        schema:
+          type: string
+      - in: query
+        name: founded_year
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompanyList'
+          description: ''
+  /api/jobs/companies/{id}/:
+    get:
+      operationId: jobs_companies_retrieve
+      description: ViewSet for company information (read-only for regular users).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Company.
+        required: true
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+  /api/jobs/industries/:
+    get:
+      operationId: jobs_industries_list
+      description: ViewSet for industry information (read-only).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIndustryList'
+          description: ''
+  /api/jobs/industries/{id}/:
+    get:
+      operationId: jobs_industries_retrieve
+      description: ViewSet for industry information (read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Industry.
+        required: true
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+          description: ''
+  /api/jobs/job-types/:
+    get:
+      operationId: jobs_job_types_list
+      description: ViewSet for job type information (read-only).
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedJobTypeList'
+          description: ''
+  /api/jobs/job-types/{id}/:
+    get:
+      operationId: jobs_job_types_retrieve
+      description: ViewSet for job type information (read-only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job Type.
+        required: true
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobType'
+          description: ''
+  /api/jobs/jobs/:
+    get:
+      operationId: jobs_jobs_list
+      description: Get a paginated list of all active job postings with filtering
+        and search capabilities
+      summary: List all active jobs
+      parameters:
+      - in: query
+        name: applications_count__gte
+        schema:
+          type: integer
+      - in: query
+        name: applications_count__lte
+        schema:
+          type: integer
+      - in: query
+        name: categories
+        schema:
+          type: string
+        description: Filter by category IDs (comma-separated)
+      - in: query
+        name: category_hierarchy
+        schema:
+          type: number
+      - in: query
+        name: category_slug
+        schema:
+          type: string
+      - in: query
+        name: category_slugs
+        schema:
+          type: string
+      - in: query
+        name: category_tree
+        schema:
+          type: string
+      - in: query
+        name: company
+        schema:
+          type: integer
+      - in: query
+        name: company_name
+        schema:
+          type: string
+      - in: query
+        name: deadline_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: deadline_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: experience_level
+        schema:
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          enum:
+          - entry
+          - executive
+          - junior
+          - lead
+          - mid
+          - senior
+        description: |-
+          Required experience level
+
+          * `entry` - Entry Level
+          * `junior` - Junior
+          * `mid` - Mid Level
+          * `senior` - Senior
+          * `lead` - Lead
+          * `executive` - Executive
+      - in: query
+        name: experience_levels
+        schema:
+          type: array
+          items:
+            type: string
+            x-spec-enum-id: f534eb11b297d2f0
+            enum:
+            - entry
+            - executive
+            - junior
+            - lead
+            - mid
+            - senior
+        description: |-
+          Required experience level
+
+          * `entry` - Entry Level
+          * `junior` - Junior
+          * `mid` - Mid Level
+          * `senior` - Senior
+          * `lead` - Lead
+          * `executive` - Executive
+        explode: true
+        style: form
+      - in: query
+        name: has_deadline
+        schema:
+          type: boolean
+      - in: query
+        name: include_inactive
+        schema:
+          type: boolean
+        description: Include inactive jobs (admin only)
+      - in: query
+        name: industry
+        schema:
+          type: integer
+        description: Filter by industry ID
+      - in: query
+        name: is_featured
+        schema:
+          type: boolean
+      - in: query
+        name: is_remote
+        schema:
+          type: boolean
+      - in: query
+        name: job_type
+        schema:
+          type: integer
+        description: Filter by job type ID
+      - in: query
+        name: location
+        schema:
+          type: string
+        description: Filter by location
+      - in: query
+        name: location_exact
+        schema:
+          type: string
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Order by: created_at, updated_at, title, salary_min, salary_max,
+          views_count, applications_count (prefix with - for descending)'
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number for pagination
+      - in: query
+        name: posted_after
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: posted_before
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: posted_days_ago
+        schema:
+          type: number
+      - in: query
+        name: preferred_skills
+        schema:
+          type: string
+      - in: query
+        name: remote_friendly
+        schema:
+          type: boolean
+      - in: query
+        name: required_skills
+        schema:
+          type: string
+      - in: query
+        name: salary_currency
+        schema:
+          type: string
+      - in: query
+        name: salary_max
+        schema:
+          type: integer
+        description: Maximum salary filter
+      - in: query
+        name: salary_max_lte
+        schema:
+          type: number
+      - in: query
+        name: salary_min
+        schema:
+          type: integer
+        description: Minimum salary filter
+      - in: query
+        name: salary_min_gte
+        schema:
+          type: number
+      - in: query
+        name: salary_range_max
+        schema:
+          type: number
+      - in: query
+        name: salary_range_min
+        schema:
+          type: number
+      - in: query
+        name: salary_type
+        schema:
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          enum:
+          - hourly
+          - monthly
+          - yearly
+        description: |-
+          Type of salary (hourly, monthly, yearly)
+
+          * `hourly` - Hourly
+          * `monthly` - Monthly
+          * `yearly` - Yearly
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search in job title, description, company name, location, or
+          required skills
+      - in: query
+        name: views_count__gte
+        schema:
+          type: integer
+      - in: query
+        name: views_count__lte
+        schema:
+          type: integer
+      tags:
+      - Jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: List of jobs retrieved successfully
+        '401':
+          description: Authentication required
+    post:
+      operationId: jobs_jobs_create
+      description: Create a new job posting (admin only)
+      summary: Create new job posting
+      tags:
+      - Jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+            examples:
+              JobCreationExample:
+                value:
+                  title: Senior Software Engineer
+                  description: We are looking for an experienced software engineer...
+                  company: 1
+                  location: San Francisco, CA
+                  salary_min: 120000
+                  salary_max: 180000
+                  job_type: 1
+                  industry: 1
+                  categories:
+                  - 1
+                  - 2
+                  required_skills: Python, Django, PostgreSQL, React
+                  experience_required: Senior
+                  education_required: Bachelor's degree in Computer Science or related
+                    field
+                  benefits: Health insurance, 401k, flexible hours
+                  application_deadline: '2024-03-15T23:59:59Z'
+                summary: Job Creation Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '201':
+          description: Job created successfully
+        '400':
+          description: Validation error
+        '403':
+          description: Admin permission required
+  /api/jobs/jobs/{id}/:
+    get:
+      operationId: jobs_jobs_retrieve
+      description: Retrieve detailed information about a specific job posting
+      summary: Get job details
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - Jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Job details retrieved successfully
+        '404':
+          description: Job not found
+    put:
+      operationId: jobs_jobs_update
+      description: Update a job posting (admin or job creator only)
+      summary: Update job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - Jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Job updated successfully
+        '403':
+          description: Permission denied
+        '404':
+          description: Job not found
+    patch:
+      operationId: jobs_jobs_partial_update
+      description: Partially update a job posting (admin or job creator only)
+      summary: Partially update job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - Jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedJobRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedJobRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedJobRequest'
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Job updated successfully
+        '403':
+          description: Permission denied
+        '404':
+          description: Job not found
+    delete:
+      operationId: jobs_jobs_destroy
+      description: Delete (deactivate) a job posting (admin or job creator only)
+      summary: Delete job posting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - Jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '204':
+          description: Job deactivated successfully
+        '403':
+          description: Permission denied
+        '404':
+          description: Job not found
+  /api/jobs/jobs/{id}/reactivate/:
+    post:
+      operationId: jobs_jobs_reactivate_create
+      description: Reactivate a deactivated job (admin or job creator only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+  /api/jobs/jobs/{id}/toggle_featured/:
+    post:
+      operationId: jobs_jobs_toggle_featured_create
+      description: Toggle featured status of a job (admin only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Job.
+        required: true
+      tags:
+      - jobs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+  /api/jobs/jobs/featured/:
+    get:
+      operationId: jobs_jobs_featured_retrieve
+      description: Retrieve a list of featured job postings
+      summary: Get featured jobs
+      tags:
+      - Jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Featured jobs retrieved successfully
+  /api/jobs/jobs/popular/:
+    get:
+      operationId: jobs_jobs_popular_retrieve
+      description: Get popular jobs based on views and applications.
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+  /api/jobs/jobs/recent/:
+    get:
+      operationId: jobs_jobs_recent_retrieve
+      description: Get recently posted jobs (last 7 days by default).
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+  /api/jobs/jobs/search/:
+    get:
+      operationId: jobs_jobs_search_retrieve
+      description: Search jobs with advanced filtering and ranking capabilities
+      summary: Advanced job search
+      parameters:
+      - in: query
+        name: industry
+        schema:
+          type: integer
+        description: Industry ID filter
+      - in: query
+        name: job_type
+        schema:
+          type: integer
+        description: Job type ID filter
+      - in: query
+        name: location
+        schema:
+          type: string
+        description: Location filter
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Search query for job title, description, company name, or skills
+      - in: query
+        name: salary_max
+        schema:
+          type: integer
+        description: Maximum salary filter
+      - in: query
+        name: salary_min
+        schema:
+          type: integer
+        description: Minimum salary filter
+      tags:
+      - Jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Search results retrieved successfully
+  /api/jobs/jobs/similar/:
+    get:
+      operationId: jobs_jobs_similar_retrieve
+      description: Find similar jobs based on a reference job ID.
+      tags:
+      - jobs
+      security:
+      - jwtAuth: []
+      - bearerAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: ''
+components:
+  schemas:
+    ApplicationCreate:
+      type: object
+      description: Serializer for creating new job applications.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        cover_letter:
+          type: string
+          description: Cover letter text submitted with the application
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+          readOnly: true
+      required:
+      - documents
+      - id
+    ApplicationCreateRequest:
+      type: object
+      description: Serializer for creating new job applications.
+      properties:
+        job_id:
+          type: integer
+          writeOnly: true
+        cover_letter:
+          type: string
+          description: Cover letter text submitted with the application
+      required:
+      - job_id
+    ApplicationDetail:
+      type: object
+      description: Detailed serializer for application retrieval and updates.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job:
+          allOf:
+          - $ref: '#/components/schemas/JobList'
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ApplicationStatus'
+          readOnly: true
+        cover_letter:
+          type: string
+          description: Cover letter text submitted with the application
+        notes:
+          type: string
+          description: Internal notes about the application (admin only)
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the application was submitted
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the application was last updated
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the application was first reviewed
+        reviewed_by:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+          readOnly: true
+        days_since_applied:
+          type: string
+          readOnly: true
+        is_recent:
+          type: string
+          readOnly: true
+        can_withdraw:
+          type: string
+          readOnly: true
+        can_update_status:
+          type: string
+          readOnly: true
+      required:
+      - applied_at
+      - can_update_status
+      - can_withdraw
+      - days_since_applied
+      - documents
+      - id
+      - is_recent
+      - job
+      - reviewed_at
+      - reviewed_by
+      - status
+      - updated_at
+      - user
+    ApplicationDetailRequest:
+      type: object
+      description: Detailed serializer for application retrieval and updates.
+      properties:
+        cover_letter:
+          type: string
+          description: Cover letter text submitted with the application
+        notes:
+          type: string
+          description: Internal notes about the application (admin only)
+    ApplicationList:
+      type: object
+      description: Optimized serializer for application listings.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        job:
+          allOf:
+          - $ref: '#/components/schemas/JobList'
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ApplicationStatus'
+          readOnly: true
+        user_email:
+          type: string
+          readOnly: true
+        user_full_name:
+          type: string
+          readOnly: true
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the application was submitted
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the application was last updated
+        days_since_applied:
+          type: string
+          readOnly: true
+        is_recent:
+          type: string
+          readOnly: true
+        can_withdraw:
+          type: string
+          readOnly: true
+      required:
+      - applied_at
+      - can_withdraw
+      - days_since_applied
+      - id
+      - is_recent
+      - job
+      - status
+      - updated_at
+      - user_email
+      - user_full_name
+    ApplicationStatus:
+      type: object
+      description: Serializer for ApplicationStatus model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          enum:
+          - pending
+          - reviewed
+          - accepted
+          - rejected
+          - withdrawn
+          type: string
+          x-spec-enum-id: e999cfc63aa66837
+          description: |-
+            Status name (pending, reviewed, accepted, rejected, withdrawn)
+
+            * `pending` - Pending Review
+            * `reviewed` - Under Review
+            * `accepted` - Accepted
+            * `rejected` - Rejected
+            * `withdrawn` - Withdrawn
+        display_name:
+          type: string
+          description: Human-readable status name
+          maxLength: 50
+        description:
+          type: string
+          description: Description of what this status means
+        is_final:
+          type: boolean
+          description: Whether this status represents a final decision
+      required:
+      - display_name
+      - id
+      - name
+    ApplicationStatusList:
+      type: object
+      description: Serializer for listing available application statuses.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          enum:
+          - pending
+          - reviewed
+          - accepted
+          - rejected
+          - withdrawn
+          type: string
+          x-spec-enum-id: e999cfc63aa66837
+          description: |-
+            Status name (pending, reviewed, accepted, rejected, withdrawn)
+
+            * `pending` - Pending Review
+            * `reviewed` - Under Review
+            * `accepted` - Accepted
+            * `rejected` - Rejected
+            * `withdrawn` - Withdrawn
+        display_name:
+          type: string
+          description: Human-readable status name
+          maxLength: 50
+        description:
+          type: string
+          description: Description of what this status means
+        is_final:
+          type: boolean
+          description: Whether this status represents a final decision
+      required:
+      - display_name
+      - id
+      - name
+    ApplicationStatusRequest:
+      type: object
+      description: Serializer for ApplicationStatus model.
+      properties:
+        name:
+          enum:
+          - pending
+          - reviewed
+          - accepted
+          - rejected
+          - withdrawn
+          type: string
+          x-spec-enum-id: e999cfc63aa66837
+          description: |-
+            Status name (pending, reviewed, accepted, rejected, withdrawn)
+
+            * `pending` - Pending Review
+            * `reviewed` - Under Review
+            * `accepted` - Accepted
+            * `rejected` - Rejected
+            * `withdrawn` - Withdrawn
+        display_name:
+          type: string
+          minLength: 1
+          description: Human-readable status name
+          maxLength: 50
+        description:
+          type: string
+          description: Description of what this status means
+        is_final:
+          type: boolean
+          description: Whether this status represents a final decision
+      required:
+      - display_name
+      - name
+    ApplicationUpdate:
+      type: object
+      description: Serializer for updating application status (admin only).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        notes:
+          type: string
+        status:
+          type: integer
+          readOnly: true
+          description: Current status of the application
+        reviewed_by:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Admin user who reviewed the application
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          description: When the application was first reviewed
+      required:
+      - id
+      - reviewed_at
+      - reviewed_by
+      - status
+    ApplicationUpdateRequest:
+      type: object
+      description: Serializer for updating application status (admin only).
+      properties:
+        status_name:
+          type: string
+          writeOnly: true
+          minLength: 1
+        notes:
+          type: string
+      required:
+      - status_name
+    Category:
+      type: object
+      description: Serializer for Category model with hierarchical information.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Category name (e.g., Software Development, Marketing)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the job category
+        slug:
+          type: string
+          readOnly: true
+          description: URL-friendly version of category name
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+          description: Parent category for hierarchical structure
+        parent_name:
+          type: string
+          readOnly: true
+        job_count:
+          type: string
+          readOnly: true
+        full_path:
+          type: string
+          readOnly: true
+        level:
+          type: string
+          readOnly: true
+        children:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Whether this category is active for job classification
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - children
+      - created_at
+      - full_path
+      - id
+      - job_count
+      - level
+      - name
+      - parent_name
+      - slug
+      - updated_at
+    CategoryHierarchy:
+      type: object
+      description: Nested serializer for displaying category hierarchy.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Category name (e.g., Software Development, Marketing)
+          maxLength: 100
+        slug:
+          type: string
+          description: URL-friendly version of category name
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        job_count:
+          type: string
+          readOnly: true
+        direct_job_count:
+          type: string
+          readOnly: true
+        total_job_count:
+          type: string
+          readOnly: true
+        children:
+          type: string
+          readOnly: true
+      required:
+      - children
+      - direct_job_count
+      - id
+      - job_count
+      - name
+      - total_job_count
+    CategoryList:
+      type: object
+      description: Simplified serializer for category listings.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Category name (e.g., Software Development, Marketing)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the job category
+        slug:
+          type: string
+          readOnly: true
+          description: URL-friendly version of category name
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+          description: Parent category for hierarchical structure
+        parent_name:
+          type: string
+          readOnly: true
+        job_count:
+          type: string
+          readOnly: true
+        full_path:
+          type: string
+          readOnly: true
+        level:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Whether this category is active for job classification
+      required:
+      - full_path
+      - id
+      - job_count
+      - level
+      - name
+      - parent_name
+      - slug
+    CategoryRequest:
+      type: object
+      description: Serializer for Category model with hierarchical information.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Category name (e.g., Software Development, Marketing)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the job category
+        parent:
+          type: integer
+          nullable: true
+          description: Parent category for hierarchical structure
+        is_active:
+          type: boolean
+          description: Whether this category is active for job classification
+      required:
+      - name
+    Company:
+      type: object
+      description: Serializer for Company model with basic information.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Company name
+          maxLength: 200
+        description:
+          type: string
+          description: Company description and overview
+        website:
+          type: string
+          format: uri
+          description: Company website URL
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          description: Company contact email
+          maxLength: 254
+        phone:
+          type: string
+          description: Company contact phone number
+          maxLength: 20
+        address:
+          type: string
+          description: Company address
+        logo:
+          type: string
+          format: uri
+          nullable: true
+          description: Company logo image
+        founded_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: Year the company was founded
+        employee_count:
+          type: string
+          description: Number of employees (e.g., '1-10', '50-100', '500+')
+          maxLength: 50
+        slug:
+          type: string
+          readOnly: true
+          description: URL-friendly version of company name
+          pattern: ^[-a-zA-Z0-9_]+$
+        job_count:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - job_count
+      - name
+      - slug
+    CompanyRequest:
+      type: object
+      description: Serializer for Company model with basic information.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Company name
+          maxLength: 200
+        description:
+          type: string
+          description: Company description and overview
+        website:
+          type: string
+          format: uri
+          description: Company website URL
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          description: Company contact email
+          maxLength: 254
+        phone:
+          type: string
+          description: Company contact phone number
+          maxLength: 20
+        address:
+          type: string
+          description: Company address
+        logo:
+          type: string
+          format: binary
+          nullable: true
+          description: Company logo image
+        founded_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: Year the company was founded
+        employee_count:
+          type: string
+          description: Number of employees (e.g., '1-10', '50-100', '500+')
+          maxLength: 50
+      required:
+      - name
+    CustomTokenObtainPairRequest:
+      type: object
+      description: Custom JWT token serializer that includes user data in the response.
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    Document:
+      type: object
+      description: Serializer for Document model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        document_type:
+          enum:
+          - resume
+          - cover_letter
+          - portfolio
+          - certificate
+          - other
+          type: string
+          x-spec-enum-id: 65750aafefa1cef7
+          description: |-
+            Type of document
+
+            * `resume` - Resume/CV
+            * `cover_letter` - Cover Letter
+            * `portfolio` - Portfolio
+            * `certificate` - Certificate
+            * `other` - Other
+        title:
+          type: string
+          description: Document title or name
+          maxLength: 200
+        file:
+          type: string
+          format: uri
+          description: Uploaded document file
+        file_size:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: File size in bytes
+        file_size_display:
+          type: string
+          readOnly: true
+        file_extension:
+          type: string
+          readOnly: true
+        content_type:
+          type: string
+          readOnly: true
+          description: MIME type of the uploaded file
+        description:
+          type: string
+          description: Optional description of the document
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the document was uploaded
+      required:
+      - content_type
+      - document_type
+      - file
+      - file_extension
+      - file_size
+      - file_size_display
+      - id
+      - title
+      - uploaded_at
+    DocumentRequest:
+      type: object
+      description: Serializer for Document model.
+      properties:
+        document_type:
+          enum:
+          - resume
+          - cover_letter
+          - portfolio
+          - certificate
+          - other
+          type: string
+          x-spec-enum-id: 65750aafefa1cef7
+          description: |-
+            Type of document
+
+            * `resume` - Resume/CV
+            * `cover_letter` - Cover Letter
+            * `portfolio` - Portfolio
+            * `certificate` - Certificate
+            * `other` - Other
+        title:
+          type: string
+          minLength: 1
+          description: Document title or name
+          maxLength: 200
+        file:
+          type: string
+          format: binary
+          description: Uploaded document file
+        description:
+          type: string
+          description: Optional description of the document
+      required:
+      - document_type
+      - file
+      - title
+    Industry:
+      type: object
+      description: Serializer for Industry model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Industry name (e.g., Technology, Healthcare, Finance)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the industry sector
+        slug:
+          type: string
+          readOnly: true
+          description: URL-friendly version of industry name
+          pattern: ^[-a-zA-Z0-9_]+$
+        job_count:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Whether this industry is active for job classification
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - job_count
+      - name
+      - slug
+      - updated_at
+    IndustryRequest:
+      type: object
+      description: Serializer for Industry model.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Industry name (e.g., Technology, Healthcare, Finance)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the industry sector
+        is_active:
+          type: boolean
+          description: Whether this industry is active for job classification
+      required:
+      - name
+    Job:
+      type: object
+      description: |-
+        Comprehensive serializer for job creation and updates with nested relationships.
+        Includes full job details and validation for all fields.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          description: Job title (e.g., Senior Software Engineer)
+          maxLength: 200
+        description:
+          type: string
+          description: Detailed job description including responsibilities and requirements
+        summary:
+          type: string
+          description: Brief job summary for listings
+          maxLength: 500
+        location:
+          type: string
+          description: Job location (city, state/country or 'Remote')
+          maxLength: 200
+        is_remote:
+          type: boolean
+          description: Whether this is a remote position
+        salary_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Minimum salary amount
+        salary_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum salary amount
+        salary_type:
+          enum:
+          - hourly
+          - monthly
+          - yearly
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          description: |-
+            Type of salary (hourly, monthly, yearly)
+
+            * `hourly` - Hourly
+            * `monthly` - Monthly
+            * `yearly` - Yearly
+        salary_currency:
+          type: string
+          description: Currency code (e.g., USD, EUR, GBP)
+          maxLength: 3
+        experience_level:
+          enum:
+          - entry
+          - junior
+          - mid
+          - senior
+          - lead
+          - executive
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          description: |-
+            Required experience level
+
+            * `entry` - Entry Level
+            * `junior` - Junior
+            * `mid` - Mid Level
+            * `senior` - Senior
+            * `lead` - Lead
+            * `executive` - Executive
+        required_skills:
+          type: string
+          readOnly: true
+          description: Comma-separated list of required skills
+        preferred_skills:
+          type: string
+          readOnly: true
+          description: Comma-separated list of preferred skills
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deadline for job applications
+        external_url:
+          type: string
+          format: uri
+          description: External URL for job application (if not handled internally)
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: Whether this job is active and accepting applications
+        is_featured:
+          type: boolean
+          description: Whether this job should be featured in listings
+        views_count:
+          type: integer
+          readOnly: true
+          description: Number of times this job has been viewed
+        applications_count:
+          type: integer
+          readOnly: true
+          description: Number of applications received for this job
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/Company'
+          readOnly: true
+        industry:
+          allOf:
+          - $ref: '#/components/schemas/Industry'
+          readOnly: true
+        job_type:
+          allOf:
+          - $ref: '#/components/schemas/JobType'
+          readOnly: true
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          readOnly: true
+        created_by:
+          type: string
+          readOnly: true
+        updated_by:
+          type: string
+          readOnly: true
+        salary_display:
+          type: string
+          readOnly: true
+        days_since_posted:
+          type: string
+          readOnly: true
+        is_new:
+          type: string
+          readOnly: true
+        is_urgent:
+          type: string
+          readOnly: true
+        can_apply:
+          type: string
+          readOnly: true
+        category_names:
+          type: string
+          readOnly: true
+      required:
+      - applications_count
+      - can_apply
+      - categories
+      - category_names
+      - company
+      - created_at
+      - created_by
+      - days_since_posted
+      - description
+      - id
+      - industry
+      - is_new
+      - is_urgent
+      - job_type
+      - location
+      - preferred_skills
+      - required_skills
+      - salary_display
+      - title
+      - updated_at
+      - updated_by
+      - views_count
+    JobList:
+      type: object
+      description: |-
+        Optimized serializer for job listing responses.
+        Contains essential fields for job listings with minimal nested data.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          description: Job title (e.g., Senior Software Engineer)
+          maxLength: 200
+        summary:
+          type: string
+          description: Brief job summary for listings
+          maxLength: 500
+        location:
+          type: string
+          description: Job location (city, state/country or 'Remote')
+          maxLength: 200
+        is_remote:
+          type: boolean
+          description: Whether this is a remote position
+        salary_display:
+          type: string
+          readOnly: true
+        salary_type:
+          enum:
+          - hourly
+          - monthly
+          - yearly
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          description: |-
+            Type of salary (hourly, monthly, yearly)
+
+            * `hourly` - Hourly
+            * `monthly` - Monthly
+            * `yearly` - Yearly
+        salary_currency:
+          type: string
+          description: Currency code (e.g., USD, EUR, GBP)
+          maxLength: 3
+        experience_level:
+          enum:
+          - entry
+          - junior
+          - mid
+          - senior
+          - lead
+          - executive
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          description: |-
+            Required experience level
+
+            * `entry` - Entry Level
+            * `junior` - Junior
+            * `mid` - Mid Level
+            * `senior` - Senior
+            * `lead` - Lead
+            * `executive` - Executive
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deadline for job applications
+        external_url:
+          type: string
+          format: uri
+          description: External URL for job application (if not handled internally)
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: Whether this job is active and accepting applications
+        is_featured:
+          type: boolean
+          description: Whether this job should be featured in listings
+        views_count:
+          type: integer
+          readOnly: true
+          description: Number of times this job has been viewed
+        applications_count:
+          type: integer
+          readOnly: true
+          description: Number of applications received for this job
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        company_name:
+          type: string
+          readOnly: true
+        company_logo:
+          type: string
+          format: uri
+          readOnly: true
+        industry_name:
+          type: string
+          readOnly: true
+        job_type_name:
+          type: string
+          readOnly: true
+        job_type_code:
+          type: string
+          readOnly: true
+        category_names:
+          type: string
+          readOnly: true
+        days_since_posted:
+          type: string
+          readOnly: true
+        is_new:
+          type: string
+          readOnly: true
+        is_urgent:
+          type: string
+          readOnly: true
+        can_apply:
+          type: string
+          readOnly: true
+        required_skills_list:
+          type: string
+          readOnly: true
+      required:
+      - applications_count
+      - can_apply
+      - category_names
+      - company_logo
+      - company_name
+      - created_at
+      - days_since_posted
+      - id
+      - industry_name
+      - is_new
+      - is_urgent
+      - job_type_code
+      - job_type_name
+      - location
+      - required_skills_list
+      - salary_display
+      - title
+      - updated_at
+      - views_count
+    JobListRequest:
+      type: object
+      description: |-
+        Optimized serializer for job listing responses.
+        Contains essential fields for job listings with minimal nested data.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Job title (e.g., Senior Software Engineer)
+          maxLength: 200
+        summary:
+          type: string
+          description: Brief job summary for listings
+          maxLength: 500
+        location:
+          type: string
+          minLength: 1
+          description: Job location (city, state/country or 'Remote')
+          maxLength: 200
+        is_remote:
+          type: boolean
+          description: Whether this is a remote position
+        salary_type:
+          enum:
+          - hourly
+          - monthly
+          - yearly
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          description: |-
+            Type of salary (hourly, monthly, yearly)
+
+            * `hourly` - Hourly
+            * `monthly` - Monthly
+            * `yearly` - Yearly
+        salary_currency:
+          type: string
+          minLength: 1
+          description: Currency code (e.g., USD, EUR, GBP)
+          maxLength: 3
+        experience_level:
+          enum:
+          - entry
+          - junior
+          - mid
+          - senior
+          - lead
+          - executive
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          description: |-
+            Required experience level
+
+            * `entry` - Entry Level
+            * `junior` - Junior
+            * `mid` - Mid Level
+            * `senior` - Senior
+            * `lead` - Lead
+            * `executive` - Executive
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deadline for job applications
+        external_url:
+          type: string
+          format: uri
+          description: External URL for job application (if not handled internally)
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: Whether this job is active and accepting applications
+        is_featured:
+          type: boolean
+          description: Whether this job should be featured in listings
+      required:
+      - location
+      - title
+    JobRequest:
+      type: object
+      description: |-
+        Comprehensive serializer for job creation and updates with nested relationships.
+        Includes full job details and validation for all fields.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Job title (e.g., Senior Software Engineer)
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          description: Detailed job description including responsibilities and requirements
+        summary:
+          type: string
+          description: Brief job summary for listings
+          maxLength: 500
+        location:
+          type: string
+          minLength: 1
+          description: Job location (city, state/country or 'Remote')
+          maxLength: 200
+        is_remote:
+          type: boolean
+          description: Whether this is a remote position
+        salary_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Minimum salary amount
+        salary_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum salary amount
+        salary_type:
+          enum:
+          - hourly
+          - monthly
+          - yearly
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          description: |-
+            Type of salary (hourly, monthly, yearly)
+
+            * `hourly` - Hourly
+            * `monthly` - Monthly
+            * `yearly` - Yearly
+        salary_currency:
+          type: string
+          minLength: 1
+          description: Currency code (e.g., USD, EUR, GBP)
+          maxLength: 3
+        experience_level:
+          enum:
+          - entry
+          - junior
+          - mid
+          - senior
+          - lead
+          - executive
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          description: |-
+            Required experience level
+
+            * `entry` - Entry Level
+            * `junior` - Junior
+            * `mid` - Mid Level
+            * `senior` - Senior
+            * `lead` - Lead
+            * `executive` - Executive
+        required_skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of required skills
+        preferred_skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of preferred skills
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deadline for job applications
+        external_url:
+          type: string
+          format: uri
+          description: External URL for job application (if not handled internally)
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: Whether this job is active and accepting applications
+        is_featured:
+          type: boolean
+          description: Whether this job should be featured in listings
+        company_id:
+          type: integer
+          writeOnly: true
+        industry_id:
+          type: integer
+          writeOnly: true
+        job_type_id:
+          type: integer
+          writeOnly: true
+        category_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+          description: List of category IDs to assign to this job
+      required:
+      - company_id
+      - description
+      - industry_id
+      - job_type_id
+      - location
+      - title
+    JobType:
+      type: object
+      description: Serializer for JobType model.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Job type name (e.g., Full-time, Part-time, Contract)
+          maxLength: 50
+        code:
+          enum:
+          - full-time
+          - part-time
+          - contract
+          - temporary
+          - internship
+          - freelance
+          - remote
+          - hybrid
+          type: string
+          x-spec-enum-id: 277f2fc7943f02dd
+          description: |-
+            Standardized code for the job type
+
+            * `full-time` - Full-time
+            * `part-time` - Part-time
+            * `contract` - Contract
+            * `temporary` - Temporary
+            * `internship` - Internship
+            * `freelance` - Freelance
+            * `remote` - Remote
+            * `hybrid` - Hybrid
+        description:
+          type: string
+          description: Description of the employment type
+        slug:
+          type: string
+          readOnly: true
+          description: URL-friendly version of job type name
+          pattern: ^[-a-zA-Z0-9_]+$
+        job_count:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Whether this job type is active for job classification
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - job_count
+      - name
+      - slug
+      - updated_at
+    JobTypeRequest:
+      type: object
+      description: Serializer for JobType model.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Job type name (e.g., Full-time, Part-time, Contract)
+          maxLength: 50
+        code:
+          enum:
+          - full-time
+          - part-time
+          - contract
+          - temporary
+          - internship
+          - freelance
+          - remote
+          - hybrid
+          type: string
+          x-spec-enum-id: 277f2fc7943f02dd
+          description: |-
+            Standardized code for the job type
+
+            * `full-time` - Full-time
+            * `part-time` - Part-time
+            * `contract` - Contract
+            * `temporary` - Temporary
+            * `internship` - Internship
+            * `freelance` - Freelance
+            * `remote` - Remote
+            * `hybrid` - Hybrid
+        description:
+          type: string
+          description: Description of the employment type
+        is_active:
+          type: boolean
+          description: Whether this job type is active for job classification
+      required:
+      - code
+      - name
+    PaginatedApplicationListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationList'
+    PaginatedApplicationStatusListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationStatusList'
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedCategoryListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryList'
+    PaginatedCompanyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
+    PaginatedDocumentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+    PaginatedIndustryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Industry'
+    PaginatedJobTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobType'
+    PasswordChangeRequest:
+      type: object
+      description: Serializer for password change functionality.
+      properties:
+        old_password:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          minLength: 8
+        confirm_password:
+          type: string
+          minLength: 1
+      required:
+      - confirm_password
+      - new_password
+      - old_password
+    PatchedApplicationUpdateRequest:
+      type: object
+      description: Serializer for updating application status (admin only).
+      properties:
+        status_name:
+          type: string
+          writeOnly: true
+          minLength: 1
+        notes:
+          type: string
+    PatchedCategoryRequest:
+      type: object
+      description: Serializer for Category model with hierarchical information.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Category name (e.g., Software Development, Marketing)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the job category
+        parent:
+          type: integer
+          nullable: true
+          description: Parent category for hierarchical structure
+        is_active:
+          type: boolean
+          description: Whether this category is active for job classification
+    PatchedDocumentRequest:
+      type: object
+      description: Serializer for Document model.
+      properties:
+        document_type:
+          enum:
+          - resume
+          - cover_letter
+          - portfolio
+          - certificate
+          - other
+          type: string
+          x-spec-enum-id: 65750aafefa1cef7
+          description: |-
+            Type of document
+
+            * `resume` - Resume/CV
+            * `cover_letter` - Cover Letter
+            * `portfolio` - Portfolio
+            * `certificate` - Certificate
+            * `other` - Other
+        title:
+          type: string
+          minLength: 1
+          description: Document title or name
+          maxLength: 200
+        file:
+          type: string
+          format: binary
+          description: Uploaded document file
+        description:
+          type: string
+          description: Optional description of the document
+    PatchedIndustryRequest:
+      type: object
+      description: Serializer for Industry model.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Industry name (e.g., Technology, Healthcare, Finance)
+          maxLength: 100
+        description:
+          type: string
+          description: Description of the industry sector
+        is_active:
+          type: boolean
+          description: Whether this industry is active for job classification
+    PatchedJobRequest:
+      type: object
+      description: |-
+        Comprehensive serializer for job creation and updates with nested relationships.
+        Includes full job details and validation for all fields.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Job title (e.g., Senior Software Engineer)
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          description: Detailed job description including responsibilities and requirements
+        summary:
+          type: string
+          description: Brief job summary for listings
+          maxLength: 500
+        location:
+          type: string
+          minLength: 1
+          description: Job location (city, state/country or 'Remote')
+          maxLength: 200
+        is_remote:
+          type: boolean
+          description: Whether this is a remote position
+        salary_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Minimum salary amount
+        salary_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+          description: Maximum salary amount
+        salary_type:
+          enum:
+          - hourly
+          - monthly
+          - yearly
+          type: string
+          x-spec-enum-id: f28ebf0b159f2999
+          description: |-
+            Type of salary (hourly, monthly, yearly)
+
+            * `hourly` - Hourly
+            * `monthly` - Monthly
+            * `yearly` - Yearly
+        salary_currency:
+          type: string
+          minLength: 1
+          description: Currency code (e.g., USD, EUR, GBP)
+          maxLength: 3
+        experience_level:
+          enum:
+          - entry
+          - junior
+          - mid
+          - senior
+          - lead
+          - executive
+          type: string
+          x-spec-enum-id: f534eb11b297d2f0
+          description: |-
+            Required experience level
+
+            * `entry` - Entry Level
+            * `junior` - Junior
+            * `mid` - Mid Level
+            * `senior` - Senior
+            * `lead` - Lead
+            * `executive` - Executive
+        required_skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of required skills
+        preferred_skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of preferred skills
+        application_deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Deadline for job applications
+        external_url:
+          type: string
+          format: uri
+          description: External URL for job application (if not handled internally)
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: Whether this job is active and accepting applications
+        is_featured:
+          type: boolean
+          description: Whether this job should be featured in listings
+        company_id:
+          type: integer
+          writeOnly: true
+        industry_id:
+          type: integer
+          writeOnly: true
+        job_type_id:
+          type: integer
+          writeOnly: true
+        category_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+          description: List of category IDs to assign to this job
+    PatchedJobTypeRequest:
+      type: object
+      description: Serializer for JobType model.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Job type name (e.g., Full-time, Part-time, Contract)
+          maxLength: 50
+        code:
+          enum:
+          - full-time
+          - part-time
+          - contract
+          - temporary
+          - internship
+          - freelance
+          - remote
+          - hybrid
+          type: string
+          x-spec-enum-id: 277f2fc7943f02dd
+          description: |-
+            Standardized code for the job type
+
+            * `full-time` - Full-time
+            * `part-time` - Part-time
+            * `contract` - Contract
+            * `temporary` - Temporary
+            * `internship` - Internship
+            * `freelance` - Freelance
+            * `remote` - Remote
+            * `hybrid` - Hybrid
+        description:
+          type: string
+          description: Description of the employment type
+        is_active:
+          type: boolean
+          description: Whether this job type is active for job classification
+    PatchedUserProfileRequest:
+      type: object
+      description: Serializer for UserProfile model.
+      properties:
+        phone_number:
+          type: string
+          description: Contact phone number
+          pattern: ^\+?1?\d{9,15}$
+          maxLength: 17
+        bio:
+          type: string
+          description: Brief professional biography
+          maxLength: 500
+        location:
+          type: string
+          description: Current location (city, state/country)
+          maxLength: 100
+        website:
+          type: string
+          format: uri
+          description: Personal or professional website URL
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        github_url:
+          type: string
+          format: uri
+          description: GitHub profile URL
+          maxLength: 200
+        resume:
+          type: string
+          format: binary
+          nullable: true
+          description: Upload resume file (PDF preferred)
+        skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of skills
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: Years of professional experience
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TokenVerifyRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    User:
+      type: object
+      description: Serializer for User model with basic information.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: Email address used for authentication
+          maxLength: 254
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        full_name:
+          type: string
+          readOnly: true
+        is_admin:
+          type: boolean
+          description: Designates whether the user has admin privileges
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - full_name
+      - id
+      - is_active
+      - username
+    UserProfileRequest:
+      type: object
+      description: Serializer for UserProfile model.
+      properties:
+        phone_number:
+          type: string
+          description: Contact phone number
+          pattern: ^\+?1?\d{9,15}$
+          maxLength: 17
+        bio:
+          type: string
+          description: Brief professional biography
+          maxLength: 500
+        location:
+          type: string
+          description: Current location (city, state/country)
+          maxLength: 100
+        website:
+          type: string
+          format: uri
+          description: Personal or professional website URL
+          maxLength: 200
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        github_url:
+          type: string
+          format: uri
+          description: GitHub profile URL
+          maxLength: 200
+        resume:
+          type: string
+          format: binary
+          nullable: true
+          description: Upload resume file (PDF preferred)
+        skills_list:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+          writeOnly: true
+          description: List of skills
+        experience_years:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+          description: Years of professional experience
+    UserRegistrationRequest:
+      type: object
+      description: Serializer for user registration with validation.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Email address used for authentication
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+          description: Password must be at least 8 characters long
+        confirm_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Confirm your password
+      required:
+      - confirm_password
+      - email
+      - first_name
+      - last_name
+      - password
+      - username
+    UserRequest:
+      type: object
+      description: Serializer for User model with basic information.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Email address used for authentication
+          maxLength: 254
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        is_admin:
+          type: boolean
+          description: Designates whether the user has admin privileges
+      required:
+      - email
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+- url: http://localhost:8000
+  description: Development server
+- url: https://api.jobboard.com
+  description: Production server
+tags:
+- name: Authentication
+  description: User authentication and profile management endpoints
+- name: Jobs
+  description: Job posting management and search endpoints
+- name: Applications
+  description: Job application management endpoints
+- name: Categories
+  description: Job category and classification management endpoints

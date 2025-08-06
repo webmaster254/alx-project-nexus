@@ -15,7 +15,7 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver', cast=lambda v: [s.strip() for s in v.split(',')])
 
 # Application definition
 DJANGO_APPS = [
@@ -200,10 +200,103 @@ CORS_ALLOW_CREDENTIALS = True
 # API Documentation
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Job Board API',
-    'DESCRIPTION': 'A comprehensive job board backend API',
+    'DESCRIPTION': '''
+    A comprehensive job board backend API that provides:
+    
+    - **Authentication**: JWT-based authentication with role-based access control
+    - **Job Management**: Full CRUD operations for job postings with advanced search and filtering
+    - **Application Management**: Job application submission and tracking system
+    - **Category Management**: Hierarchical job categorization system
+    - **User Management**: User registration, profile management, and role-based permissions
+    
+    ## Authentication
+    
+    This API uses JWT (JSON Web Tokens) for authentication. To access protected endpoints:
+    
+    1. Register a new account or login with existing credentials
+    2. Use the returned access token in the Authorization header: `Bearer <token>`
+    3. Refresh tokens when they expire using the refresh endpoint
+    
+    ## Roles
+    
+    - **Admin**: Can create, update, and delete jobs, categories, and manage applications
+    - **User**: Can view jobs, apply for positions, and manage their own applications
+    ''',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVERS': [
+        {
+            'url': 'http://localhost:8000',
+            'description': 'Development server'
+        },
+        {
+            'url': 'https://api.jobboard.com',
+            'description': 'Production server'
+        }
+    ],
+    'TAGS': [
+        {
+            'name': 'Authentication',
+            'description': 'User authentication and profile management endpoints'
+        },
+        {
+            'name': 'Jobs',
+            'description': 'Job posting management and search endpoints'
+        },
+        {
+            'name': 'Applications',
+            'description': 'Job application management endpoints'
+        },
+        {
+            'name': 'Categories',
+            'description': 'Job category and classification management endpoints'
+        }
+    ],
+    'CONTACT': {
+        'name': 'Job Board API Support',
+        'email': 'support@jobboard.com'
+    },
+    'LICENSE': {
+        'name': 'MIT License',
+        'url': 'https://opensource.org/licenses/MIT'
+    },
+    'SECURITY': [
+        {
+            'bearerAuth': []
+        }
+    ],
+    'COMPONENTS': {
+        'securitySchemes': {
+            'bearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': 'JWT token obtained from login endpoint'
+            }
+        }
+    },
+    'PREPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.preprocess_exclude_path_format'
+    ],
+    'POSTPROCESSING_HOOKS': [],
+    'ENUM_NAME_OVERRIDES': {
+        'ValidationErrorEnum': 'drf_spectacular.types.ErrorDetail',
+    },
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': False,
+        'defaultModelsExpandDepth': 2,
+        'defaultModelExpandDepth': 2,
+        'displayRequestDuration': True,
+        'docExpansion': 'list',
+        'filter': True,
+        'showExtensions': True,
+        'showCommonExtensions': True,
+    }
 }
 
 # Logging

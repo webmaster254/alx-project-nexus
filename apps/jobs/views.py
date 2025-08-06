@@ -6,6 +6,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
+from drf_spectacular.openapi import OpenApiTypes
 
 from .models import Job, Company
 from .serializers import (
@@ -59,6 +61,358 @@ class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
         return obj.created_by == request.user or request.user.is_admin
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Jobs'],
+        summary='List all active jobs',
+        description='Get a paginated list of all active job postings with filtering and search capabilities',
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search in job title, description, company name, location, or required skills'
+            ),
+            OpenApiParameter(
+                name='industry',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Filter by industry ID'
+            ),
+            OpenApiParameter(
+                name='job_type',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Filter by job type ID'
+            ),
+            OpenApiParameter(
+                name='location',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by location'
+            ),
+            OpenApiParameter(
+                name='salary_min',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Minimum salary filter'
+            ),
+            OpenApiParameter(
+                name='salary_max',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Maximum salary filter'
+            ),
+            OpenApiParameter(
+                name='categories',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by category IDs (comma-separated)'
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Order by: created_at, updated_at, title, salary_min, salary_max, views_count, applications_count (prefix with - for descending)'
+            ),
+            OpenApiParameter(
+                name='page',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Page number for pagination'
+            ),
+            OpenApiParameter(
+                name='include_inactive',
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description='Include inactive jobs (admin only)'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='List of jobs retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Jobs List Response',
+                        value={
+                            'count': 150,
+                            'next': 'http://localhost:8000/api/jobs/?page=2',
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'title': 'Senior Software Engineer',
+                                    'company': {
+                                        'id': 1,
+                                        'name': 'Tech Corp',
+                                        'logo': 'http://example.com/logo.png'
+                                    },
+                                    'location': 'San Francisco, CA',
+                                    'salary_min': 120000,
+                                    'salary_max': 180000,
+                                    'job_type': {
+                                        'id': 1,
+                                        'name': 'Full-time'
+                                    },
+                                    'industry': {
+                                        'id': 1,
+                                        'name': 'Technology'
+                                    },
+                                    'categories': [
+                                        {
+                                            'id': 1,
+                                            'name': 'Software Development',
+                                            'slug': 'software-development'
+                                        }
+                                    ],
+                                    'is_featured': False,
+                                    'created_at': '2024-01-15T10:30:00Z',
+                                    'views_count': 245,
+                                    'applications_count': 12
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            401: OpenApiResponse(
+                description='Authentication required',
+                examples=[
+                    OpenApiExample(
+                        'Unauthorized',
+                        value={'detail': 'Authentication credentials were not provided.'}
+                    )
+                ]
+            )
+        }
+    ),
+    create=extend_schema(
+        tags=['Jobs'],
+        summary='Create new job posting',
+        description='Create a new job posting (admin only)',
+        examples=[
+            OpenApiExample(
+                'Job Creation Example',
+                value={
+                    'title': 'Senior Software Engineer',
+                    'description': 'We are looking for an experienced software engineer...',
+                    'company': 1,
+                    'location': 'San Francisco, CA',
+                    'salary_min': 120000,
+                    'salary_max': 180000,
+                    'job_type': 1,
+                    'industry': 1,
+                    'categories': [1, 2],
+                    'required_skills': 'Python, Django, PostgreSQL, React',
+                    'experience_required': 'Senior',
+                    'education_required': 'Bachelor\'s degree in Computer Science or related field',
+                    'benefits': 'Health insurance, 401k, flexible hours',
+                    'application_deadline': '2024-03-15T23:59:59Z'
+                },
+                request_only=True
+            )
+        ],
+        responses={
+            201: OpenApiResponse(
+                description='Job created successfully',
+                examples=[
+                    OpenApiExample(
+                        'Job Created Response',
+                        value={
+                            'id': 1,
+                            'title': 'Senior Software Engineer',
+                            'description': 'We are looking for an experienced software engineer...',
+                            'company': {
+                                'id': 1,
+                                'name': 'Tech Corp',
+                                'description': 'Leading technology company',
+                                'logo': 'http://example.com/logo.png'
+                            },
+                            'location': 'San Francisco, CA',
+                            'salary_min': 120000,
+                            'salary_max': 180000,
+                            'job_type': {
+                                'id': 1,
+                                'name': 'Full-time'
+                            },
+                            'industry': {
+                                'id': 1,
+                                'name': 'Technology'
+                            },
+                            'categories': [
+                                {
+                                    'id': 1,
+                                    'name': 'Software Development',
+                                    'slug': 'software-development'
+                                }
+                            ],
+                            'required_skills': 'Python, Django, PostgreSQL, React',
+                            'is_active': True,
+                            'is_featured': False,
+                            'created_at': '2024-01-15T10:30:00Z',
+                            'created_by': {
+                                'id': 1,
+                                'email': 'admin@example.com',
+                                'first_name': 'Admin',
+                                'last_name': 'User'
+                            }
+                        }
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Validation error',
+                examples=[
+                    OpenApiExample(
+                        'Validation Error',
+                        value={
+                            'title': ['This field is required.'],
+                            'salary_min': ['Ensure this value is greater than 0.']
+                        }
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'error': 'Only administrators can create job postings.'}
+                    )
+                ]
+            )
+        }
+    ),
+    retrieve=extend_schema(
+        tags=['Jobs'],
+        summary='Get job details',
+        description='Retrieve detailed information about a specific job posting',
+        responses={
+            200: OpenApiResponse(
+                description='Job details retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Job Details Response',
+                        value={
+                            'id': 1,
+                            'title': 'Senior Software Engineer',
+                            'description': 'We are looking for an experienced software engineer...',
+                            'company': {
+                                'id': 1,
+                                'name': 'Tech Corp',
+                                'description': 'Leading technology company',
+                                'logo': 'http://example.com/logo.png',
+                                'website': 'https://techcorp.com',
+                                'employee_count': '1000-5000'
+                            },
+                            'location': 'San Francisco, CA',
+                            'salary_min': 120000,
+                            'salary_max': 180000,
+                            'job_type': {
+                                'id': 1,
+                                'name': 'Full-time',
+                                'description': 'Full-time employment'
+                            },
+                            'industry': {
+                                'id': 1,
+                                'name': 'Technology',
+                                'description': 'Technology and software industry'
+                            },
+                            'categories': [
+                                {
+                                    'id': 1,
+                                    'name': 'Software Development',
+                                    'slug': 'software-development',
+                                    'description': 'Software development positions'
+                                }
+                            ],
+                            'required_skills': 'Python, Django, PostgreSQL, React',
+                            'experience_required': 'Senior',
+                            'education_required': 'Bachelor\'s degree in Computer Science',
+                            'benefits': 'Health insurance, 401k, flexible hours',
+                            'application_deadline': '2024-03-15T23:59:59Z',
+                            'is_active': True,
+                            'is_featured': False,
+                            'views_count': 245,
+                            'applications_count': 12,
+                            'created_at': '2024-01-15T10:30:00Z',
+                            'updated_at': '2024-01-15T10:30:00Z',
+                            'created_by': {
+                                'id': 1,
+                                'email': 'admin@example.com',
+                                'first_name': 'Admin',
+                                'last_name': 'User'
+                            }
+                        }
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Job not found',
+                examples=[
+                    OpenApiExample(
+                        'Not Found',
+                        value={'detail': 'Not found.'}
+                    )
+                ]
+            )
+        }
+    ),
+    update=extend_schema(
+        tags=['Jobs'],
+        summary='Update job posting',
+        description='Update a job posting (admin or job creator only)',
+        responses={
+            200: OpenApiResponse(description='Job updated successfully'),
+            403: OpenApiResponse(
+                description='Permission denied',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'error': 'You do not have permission to update this job.'}
+                    )
+                ]
+            ),
+            404: OpenApiResponse(description='Job not found')
+        }
+    ),
+    partial_update=extend_schema(
+        tags=['Jobs'],
+        summary='Partially update job posting',
+        description='Partially update a job posting (admin or job creator only)',
+        responses={
+            200: OpenApiResponse(description='Job updated successfully'),
+            403: OpenApiResponse(description='Permission denied'),
+            404: OpenApiResponse(description='Job not found')
+        }
+    ),
+    destroy=extend_schema(
+        tags=['Jobs'],
+        summary='Delete job posting',
+        description='Delete (deactivate) a job posting (admin or job creator only)',
+        responses={
+            204: OpenApiResponse(
+                description='Job deactivated successfully',
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={'message': 'Job posting has been deactivated successfully.'}
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Permission denied',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'error': 'You do not have permission to delete this job.'}
+                    )
+                ]
+            ),
+            404: OpenApiResponse(description='Job not found')
+        }
+    )
+)
 class JobViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing job postings with CRUD operations.
@@ -279,6 +633,83 @@ class JobViewSet(viewsets.ModelViewSet):
             'is_active': job.is_active
         })
     
+    @extend_schema(
+        tags=['Jobs'],
+        summary='Advanced job search',
+        description='Search jobs with advanced filtering and ranking capabilities',
+        parameters=[
+            OpenApiParameter(
+                name='q',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search query for job title, description, company name, or skills'
+            ),
+            OpenApiParameter(
+                name='location',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Location filter'
+            ),
+            OpenApiParameter(
+                name='industry',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Industry ID filter'
+            ),
+            OpenApiParameter(
+                name='job_type',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Job type ID filter'
+            ),
+            OpenApiParameter(
+                name='salary_min',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Minimum salary filter'
+            ),
+            OpenApiParameter(
+                name='salary_max',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Maximum salary filter'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Search results retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Search Results',
+                        value={
+                            'count': 25,
+                            'next': None,
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'title': 'Senior Software Engineer',
+                                    'company': {
+                                        'id': 1,
+                                        'name': 'Tech Corp',
+                                        'logo': 'http://example.com/logo.png'
+                                    },
+                                    'location': 'San Francisco, CA',
+                                    'salary_min': 120000,
+                                    'salary_max': 180000,
+                                    'job_type': {
+                                        'id': 1,
+                                        'name': 'Full-time'
+                                    },
+                                    'created_at': '2024-01-15T10:30:00Z'
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def search(self, request):
         """
@@ -301,6 +732,42 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer = JobListSerializer(queryset, many=True)
         return Response(serializer.data)
     
+    @extend_schema(
+        tags=['Jobs'],
+        summary='Get featured jobs',
+        description='Retrieve a list of featured job postings',
+        responses={
+            200: OpenApiResponse(
+                description='Featured jobs retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Featured Jobs Response',
+                        value={
+                            'count': 10,
+                            'next': None,
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'title': 'Senior Software Engineer',
+                                    'company': {
+                                        'id': 1,
+                                        'name': 'Tech Corp',
+                                        'logo': 'http://example.com/logo.png'
+                                    },
+                                    'location': 'San Francisco, CA',
+                                    'salary_min': 120000,
+                                    'salary_max': 180000,
+                                    'is_featured': True,
+                                    'created_at': '2024-01-15T10:30:00Z'
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def featured(self, request):
         """
