@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from django.db.models import Q
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
+from drf_spectacular.openapi import OpenApiTypes
 from apps.applications.models import Application, ApplicationStatus, Document
 from apps.applications.serializers import (
     ApplicationListSerializer,
@@ -21,10 +23,388 @@ from apps.applications.serializers import (
 from apps.common.permissions import IsAdminOrReadOnly, IsOwnerOrAdmin, IsAdminUser
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=['Applications'],
+        summary='List job applications',
+        description='Get a paginated list of job applications. Regular users see only their own applications, admins see all applications.',
+        parameters=[
+            OpenApiParameter(
+                name='status__name',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by application status (pending, reviewed, accepted, rejected, withdrawn)'
+            ),
+            OpenApiParameter(
+                name='job__id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Filter by job ID'
+            ),
+            OpenApiParameter(
+                name='job__company__id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Filter by company ID'
+            ),
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search in job title, company name, or cover letter'
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Order by: applied_at, updated_at, status__name (prefix with - for descending)'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Applications retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Applications List Response',
+                        value={
+                            'count': 25,
+                            'next': 'http://localhost:8000/api/applications/?page=2',
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'job': {
+                                        'id': 1,
+                                        'title': 'Senior Software Engineer',
+                                        'company': {
+                                            'id': 1,
+                                            'name': 'Tech Corp',
+                                            'logo': 'http://example.com/logo.png'
+                                        },
+                                        'location': 'San Francisco, CA',
+                                        'salary_min': 120000,
+                                        'salary_max': 180000
+                                    },
+                                    'status': {
+                                        'id': 1,
+                                        'name': 'pending',
+                                        'display_name': 'Pending Review',
+                                        'description': 'Application is pending review'
+                                    },
+                                    'user_email': 'user@example.com',
+                                    'user_full_name': 'John Doe',
+                                    'applied_at': '2024-01-15T10:30:00Z',
+                                    'days_since_applied': 5,
+                                    'is_recent': True,
+                                    'can_withdraw': True
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            401: OpenApiResponse(
+                description='Authentication required',
+                examples=[
+                    OpenApiExample(
+                        'Unauthorized',
+                        value={'detail': 'Authentication credentials were not provided.'}
+                    )
+                ]
+            )
+        }
+    ),
+    create=extend_schema(
+        tags=['Applications'],
+        summary='Submit job application',
+        description='Submit a new job application. Prevents duplicate applications for the same job.',
+        examples=[
+            OpenApiExample(
+                'Application Submission Example',
+                value={
+                    'job': 1,
+                    'cover_letter': 'I am very interested in this position because...',
+                    'documents': [
+                        {
+                            'document_type': 'resume',
+                            'title': 'My Resume',
+                            'file': 'base64_encoded_file_content'
+                        }
+                    ]
+                },
+                request_only=True
+            )
+        ],
+        responses={
+            201: OpenApiResponse(
+                description='Application submitted successfully',
+                examples=[
+                    OpenApiExample(
+                        'Application Created Response',
+                        value={
+                            'id': 1,
+                            'job': {
+                                'id': 1,
+                                'title': 'Senior Software Engineer',
+                                'company': {
+                                    'id': 1,
+                                    'name': 'Tech Corp',
+                                    'description': 'Leading technology company',
+                                    'logo': 'http://example.com/logo.png'
+                                },
+                                'location': 'San Francisco, CA',
+                                'salary_min': 120000,
+                                'salary_max': 180000
+                            },
+                            'user': {
+                                'id': 1,
+                                'email': 'user@example.com',
+                                'first_name': 'John',
+                                'last_name': 'Doe'
+                            },
+                            'status': {
+                                'id': 1,
+                                'name': 'pending',
+                                'display_name': 'Pending Review',
+                                'description': 'Application is pending review'
+                            },
+                            'cover_letter': 'I am very interested in this position because...',
+                            'applied_at': '2024-01-15T10:30:00Z',
+                            'updated_at': '2024-01-15T10:30:00Z',
+                            'documents': [
+                                {
+                                    'id': 1,
+                                    'document_type': 'resume',
+                                    'title': 'My Resume',
+                                    'file': 'http://example.com/media/documents/resume.pdf',
+                                    'file_size': 1024000,
+                                    'uploaded_at': '2024-01-15T10:30:00Z'
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Validation error or duplicate application',
+                examples=[
+                    OpenApiExample(
+                        'Duplicate Application',
+                        value={
+                            'non_field_errors': ['You have already applied for this job.']
+                        }
+                    ),
+                    OpenApiExample(
+                        'Validation Error',
+                        value={
+                            'job': ['This field is required.'],
+                            'cover_letter': ['This field may not be blank.']
+                        }
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Job not found',
+                examples=[
+                    OpenApiExample(
+                        'Job Not Found',
+                        value={'job': ['Invalid pk "999" - object does not exist.']}
+                    )
+                ]
+            )
+        }
+    ),
+    retrieve=extend_schema(
+        tags=['Applications'],
+        summary='Get application details',
+        description='Retrieve detailed information about a specific application. Users can only view their own applications unless they are admin.',
+        responses={
+            200: OpenApiResponse(
+                description='Application details retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Application Details Response',
+                        value={
+                            'id': 1,
+                            'job': {
+                                'id': 1,
+                                'title': 'Senior Software Engineer',
+                                'company': {
+                                    'id': 1,
+                                    'name': 'Tech Corp',
+                                    'description': 'Leading technology company',
+                                    'logo': 'http://example.com/logo.png',
+                                    'website': 'https://techcorp.com'
+                                },
+                                'location': 'San Francisco, CA',
+                                'salary_min': 120000,
+                                'salary_max': 180000,
+                                'job_type': {
+                                    'id': 1,
+                                    'name': 'Full-time'
+                                }
+                            },
+                            'user': {
+                                'id': 1,
+                                'email': 'user@example.com',
+                                'first_name': 'John',
+                                'last_name': 'Doe'
+                            },
+                            'status': {
+                                'id': 2,
+                                'name': 'reviewed',
+                                'display_name': 'Under Review',
+                                'description': 'Application is being reviewed by the hiring team'
+                            },
+                            'cover_letter': 'I am very interested in this position because...',
+                            'applied_at': '2024-01-15T10:30:00Z',
+                            'updated_at': '2024-01-16T14:20:00Z',
+                            'reviewed_by': {
+                                'id': 2,
+                                'email': 'admin@example.com',
+                                'first_name': 'Admin',
+                                'last_name': 'User'
+                            },
+                            'notes': 'Strong technical background, proceeding to next round',
+                            'documents': [
+                                {
+                                    'id': 1,
+                                    'document_type': 'resume',
+                                    'title': 'My Resume',
+                                    'file': 'http://example.com/media/documents/resume.pdf',
+                                    'file_size': 1024000,
+                                    'file_size_display': '1.0 MB',
+                                    'file_extension': 'pdf',
+                                    'uploaded_at': '2024-01-15T10:30:00Z'
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Permission denied',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'detail': 'You do not have permission to perform this action.'}
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Application not found',
+                examples=[
+                    OpenApiExample(
+                        'Not Found',
+                        value={'detail': 'Not found.'}
+                    )
+                ]
+            )
+        }
+    ),
+    update=extend_schema(
+        tags=['Applications'],
+        summary='Update application status',
+        description='Update application status and add review notes (admin only)',
+        examples=[
+            OpenApiExample(
+                'Status Update Example',
+                value={
+                    'status': 2,
+                    'notes': 'Candidate has strong technical skills, moving to interview stage'
+                },
+                request_only=True
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Application updated successfully',
+                examples=[
+                    OpenApiExample(
+                        'Updated Application Response',
+                        value={
+                            'id': 1,
+                            'status': {
+                                'id': 2,
+                                'name': 'reviewed',
+                                'display_name': 'Under Review'
+                            },
+                            'notes': 'Candidate has strong technical skills, moving to interview stage',
+                            'updated_at': '2024-01-16T14:20:00Z',
+                            'reviewed_by': {
+                                'id': 2,
+                                'email': 'admin@example.com',
+                                'first_name': 'Admin',
+                                'last_name': 'User'
+                            }
+                        }
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'detail': 'You do not have permission to perform this action.'}
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Invalid status transition',
+                examples=[
+                    OpenApiExample(
+                        'Invalid Status',
+                        value={'status': ['Cannot change status from accepted to pending.']}
+                    )
+                ]
+            )
+        }
+    ),
+    destroy=extend_schema(
+        tags=['Applications'],
+        summary='Delete application',
+        description='Delete an application (admin only). This is a hard delete and cannot be undone.',
+        responses={
+            204: OpenApiResponse(
+                description='Application deleted successfully'
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'detail': 'You do not have permission to perform this action.'}
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Application not found'
+            )
+        }
+    )
+)
 class ApplicationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing job applications.
     Provides user-specific application listing and submission functionality.
+    
+    **Authentication Required**: All endpoints require JWT authentication.
+    
+    **Permissions**:
+    - Regular users can view and create their own applications
+    - Admins can view all applications and update statuses
+    - Only admins can delete applications
+    
+    **Available Actions**:
+    - `list`: Get paginated list of applications
+    - `create`: Submit new job application
+    - `retrieve`: Get detailed application information
+    - `update`: Update application status (admin only)
+    - `destroy`: Delete application (admin only)
+    - `withdraw`: Withdraw application (user action)
+    - `my_applications`: Get current user's applications
+    - `statistics`: Get application statistics
     """
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ['status__name', 'job__id', 'job__company__id']
@@ -125,6 +505,50 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         
         return Response(response_serializer.data)
     
+    @extend_schema(
+        tags=['Applications'],
+        summary='Withdraw job application',
+        description='Withdraw a job application. Only the application owner can withdraw their own application.',
+        responses={
+            200: OpenApiResponse(
+                description='Application withdrawn successfully',
+                examples=[
+                    OpenApiExample(
+                        'Withdrawn Application Response',
+                        value={
+                            'id': 1,
+                            'status': {
+                                'id': 5,
+                                'name': 'withdrawn',
+                                'display_name': 'Withdrawn',
+                                'description': 'Application has been withdrawn by the applicant'
+                            },
+                            'updated_at': '2024-01-16T14:20:00Z',
+                            'notes': 'Application withdrawn by user'
+                        }
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Permission denied',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'error': 'You can only withdraw your own applications.'}
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Cannot withdraw application',
+                examples=[
+                    OpenApiExample(
+                        'Cannot Withdraw',
+                        value={'error': 'Cannot withdraw application that has already been processed.'}
+                    )
+                ]
+            )
+        }
+    )
     @action(detail=True, methods=['post'], url_path='withdraw')
     def withdraw(self, request, pk=None):
         """
@@ -153,6 +577,60 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         
         return Response(response_serializer.data)
     
+    @extend_schema(
+        tags=['Applications'],
+        summary='Get my applications',
+        description='Retrieve all applications submitted by the current user with filtering and pagination.',
+        parameters=[
+            OpenApiParameter(
+                name='status__name',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by application status'
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Order by: applied_at, updated_at, status__name'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='User applications retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'My Applications Response',
+                        value={
+                            'count': 5,
+                            'next': None,
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'job': {
+                                        'id': 1,
+                                        'title': 'Senior Software Engineer',
+                                        'company': {
+                                            'id': 1,
+                                            'name': 'Tech Corp'
+                                        }
+                                    },
+                                    'status': {
+                                        'id': 1,
+                                        'name': 'pending',
+                                        'display_name': 'Pending Review'
+                                    },
+                                    'applied_at': '2024-01-15T10:30:00Z',
+                                    'can_withdraw': True
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
     @action(detail=False, methods=['get'], url_path='my-applications')
     def my_applications(self, request):
         """
@@ -342,6 +820,46 @@ class ApplicationViewSet(viewsets.ModelViewSet):
             'updated_applications': [app.id for app in updated_applications]
         })
     
+    @extend_schema(
+        tags=['Applications'],
+        summary='Get application statistics',
+        description='Retrieve application statistics. Regular users see their own stats, admins see global statistics.',
+        responses={
+            200: OpenApiResponse(
+                description='Statistics retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'User Statistics Response',
+                        value={
+                            'total_applications': 12,
+                            'status_breakdown': {
+                                'pending': 3,
+                                'reviewed': 2,
+                                'accepted': 1,
+                                'rejected': 5,
+                                'withdrawn': 1
+                            },
+                            'recent_applications_30_days': 8
+                        }
+                    ),
+                    OpenApiExample(
+                        'Admin Statistics Response',
+                        value={
+                            'total_applications': 1250,
+                            'status_breakdown': {
+                                'pending': 150,
+                                'reviewed': 300,
+                                'accepted': 200,
+                                'rejected': 500,
+                                'withdrawn': 100
+                            },
+                            'recent_applications_30_days': 350
+                        }
+                    )
+                ]
+            )
+        }
+    )
     @action(detail=False, methods=['get'], url_path='statistics')
     def statistics(self, request):
         """

@@ -3,7 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiExample, OpenApiResponse, OpenApiParameter
+from drf_spectacular.openapi import OpenApiTypes
 from django.db import models
 from .models import Category, Industry, JobType
 from .serializers import (
@@ -32,34 +33,256 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 @extend_schema_view(
     list=extend_schema(
+        tags=["Categories"],
         summary="List categories",
-        description="Retrieve a list of all active categories with optional filtering and search.",
-        tags=["Categories"]
+        description="Retrieve a list of all active categories with optional filtering and search capabilities.",
+        parameters=[
+            OpenApiParameter(
+                name='parent',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description='Filter by parent category ID'
+            ),
+            OpenApiParameter(
+                name='parent__slug',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Filter by parent category slug'
+            ),
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Search in category name and description'
+            ),
+            OpenApiParameter(
+                name='ordering',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Order by: name, created_at, job_count (prefix with - for descending)'
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Categories retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Categories List Response',
+                        value={
+                            'count': 15,
+                            'next': None,
+                            'previous': None,
+                            'results': [
+                                {
+                                    'id': 1,
+                                    'name': 'Software Development',
+                                    'description': 'Software engineering and development positions',
+                                    'slug': 'software-development',
+                                    'parent': None,
+                                    'parent_name': None,
+                                    'job_count': 45,
+                                    'full_path': 'Software Development',
+                                    'level': 0,
+                                    'children': [
+                                        {
+                                            'id': 2,
+                                            'name': 'Frontend Development',
+                                            'slug': 'frontend-development',
+                                            'job_count': 15
+                                        }
+                                    ],
+                                    'is_active': True,
+                                    'created_at': '2024-01-10T10:00:00Z'
+                                }
+                            ]
+                        }
+                    )
+                ]
+            ),
+            401: OpenApiResponse(
+                description='Authentication required',
+                examples=[
+                    OpenApiExample(
+                        'Unauthorized',
+                        value={'detail': 'Authentication credentials were not provided.'}
+                    )
+                ]
+            )
+        }
     ),
     create=extend_schema(
+        tags=["Categories"],
         summary="Create category",
         description="Create a new category. Admin access required.",
-        tags=["Categories"]
+        examples=[
+            OpenApiExample(
+                'Category Creation Example',
+                value={
+                    'name': 'Data Science',
+                    'description': 'Data science and analytics positions',
+                    'parent': 1
+                },
+                request_only=True
+            )
+        ],
+        responses={
+            201: OpenApiResponse(
+                description='Category created successfully',
+                examples=[
+                    OpenApiExample(
+                        'Category Created Response',
+                        value={
+                            'id': 3,
+                            'name': 'Data Science',
+                            'description': 'Data science and analytics positions',
+                            'slug': 'data-science',
+                            'parent': 1,
+                            'parent_name': 'Software Development',
+                            'job_count': 0,
+                            'full_path': 'Software Development > Data Science',
+                            'level': 1,
+                            'children': [],
+                            'is_active': True,
+                            'created_at': '2024-01-15T10:30:00Z'
+                        }
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Validation error',
+                examples=[
+                    OpenApiExample(
+                        'Validation Error',
+                        value={
+                            'name': ['This field is required.'],
+                            'parent': ['Invalid pk "999" - object does not exist.']
+                        }
+                    )
+                ]
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'detail': 'You do not have permission to perform this action.'}
+                    )
+                ]
+            )
+        }
     ),
     retrieve=extend_schema(
+        tags=["Categories"],
         summary="Get category details",
         description="Retrieve detailed information about a specific category by slug.",
-        tags=["Categories"]
+        responses={
+            200: OpenApiResponse(
+                description='Category details retrieved successfully',
+                examples=[
+                    OpenApiExample(
+                        'Category Details Response',
+                        value={
+                            'id': 1,
+                            'name': 'Software Development',
+                            'description': 'Software engineering and development positions',
+                            'slug': 'software-development',
+                            'parent': None,
+                            'parent_name': None,
+                            'job_count': 45,
+                            'full_path': 'Software Development',
+                            'level': 0,
+                            'children': [
+                                {
+                                    'id': 2,
+                                    'name': 'Frontend Development',
+                                    'slug': 'frontend-development',
+                                    'job_count': 15
+                                },
+                                {
+                                    'id': 3,
+                                    'name': 'Backend Development',
+                                    'slug': 'backend-development',
+                                    'job_count': 20
+                                }
+                            ],
+                            'is_active': True,
+                            'created_at': '2024-01-10T10:00:00Z',
+                            'updated_at': '2024-01-10T10:00:00Z'
+                        }
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Category not found',
+                examples=[
+                    OpenApiExample(
+                        'Not Found',
+                        value={'detail': 'Not found.'}
+                    )
+                ]
+            )
+        }
     ),
     update=extend_schema(
+        tags=["Categories"],
         summary="Update category",
         description="Update an existing category. Admin access required.",
-        tags=["Categories"]
+        examples=[
+            OpenApiExample(
+                'Category Update Example',
+                value={
+                    'name': 'Software Engineering',
+                    'description': 'Updated description for software engineering positions'
+                },
+                request_only=True
+            )
+        ],
+        responses={
+            200: OpenApiResponse(
+                description='Category updated successfully'
+            ),
+            400: OpenApiResponse(
+                description='Validation error'
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required'
+            ),
+            404: OpenApiResponse(
+                description='Category not found'
+            )
+        }
     ),
     partial_update=extend_schema(
+        tags=["Categories"],
         summary="Partially update category",
         description="Partially update an existing category. Admin access required.",
-        tags=["Categories"]
+        responses={
+            200: OpenApiResponse(description='Category updated successfully'),
+            403: OpenApiResponse(description='Admin permission required'),
+            404: OpenApiResponse(description='Category not found')
+        }
     ),
     destroy=extend_schema(
+        tags=["Categories"],
         summary="Delete category",
-        description="Delete a category. Admin access required.",
-        tags=["Categories"]
+        description="Soft delete a category by setting is_active to False. Admin access required.",
+        responses={
+            204: OpenApiResponse(
+                description='Category deleted successfully'
+            ),
+            403: OpenApiResponse(
+                description='Admin permission required',
+                examples=[
+                    OpenApiExample(
+                        'Permission Denied',
+                        value={'detail': 'You do not have permission to perform this action.'}
+                    )
+                ]
+            ),
+            404: OpenApiResponse(
+                description='Category not found'
+            )
+        }
     ),
 )
 class CategoryViewSet(viewsets.ModelViewSet):

@@ -92,50 +92,75 @@ paths:
   /api/applications/applications/:
     get:
       operationId: applications_applications_list
-      description: |-
-        ViewSet for managing job applications.
-        Provides user-specific application listing and submission functionality.
+      description: Get a paginated list of job applications. Regular users see only
+        their own applications, admins see all applications.
+      summary: List job applications
       parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+      - in: query
+        name: job__company__id
+        schema:
+          type: integer
+        description: Filter by company ID
+      - in: query
+        name: job__id
+        schema:
+          type: integer
+        description: Filter by job ID
+      - in: query
+        name: ordering
         schema:
           type: string
+        description: 'Order by: applied_at, updated_at, status__name (prefix with
+          - for descending)'
       - name: page
         required: false
         in: query
         description: A page number within the paginated result set.
         schema:
           type: integer
-      - name: search
-        required: false
-        in: query
-        description: A search term.
+      - in: query
+        name: search
         schema:
           type: string
+        description: Search in job title, company name, or cover letter
+      - in: query
+        name: status__name
+        schema:
+          type: string
+        description: Filter by application status (pending, reviewed, accepted, rejected,
+          withdrawn)
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedApplicationListList'
-          description: ''
+          description: Applications retrieved successfully
+        '401':
+          description: Authentication required
     post:
       operationId: applications_applications_create
-      description: Create a new job application with duplicate prevention.
+      description: Submit a new job application. Prevents duplicate applications for
+        the same job.
+      summary: Submit job application
       tags:
-      - applications
+      - Applications
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ApplicationCreateRequest'
+            examples:
+              ApplicationSubmissionExample:
+                value:
+                  job: 1
+                  cover_letter: I am very interested in this position because...
+                  documents:
+                  - document_type: resume
+                    title: My Resume
+                    file: base64_encoded_file_content
+                summary: Application Submission Example
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/ApplicationCreateRequest'
@@ -148,17 +173,17 @@ paths:
       - bearerAuth: []
       responses:
         '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationCreate'
-          description: ''
+          description: Application submitted successfully
+        '400':
+          description: Validation error or duplicate application
+        '404':
+          description: Job not found
   /api/applications/applications/{id}/:
     get:
       operationId: applications_applications_retrieve
-      description: |-
-        ViewSet for managing job applications.
-        Provides user-specific application listing and submission functionality.
+      description: Retrieve detailed information about a specific application. Users
+        can only view their own applications unless they are admin.
+      summary: Get application details
       parameters:
       - in: path
         name: id
@@ -166,20 +191,21 @@ paths:
           type: string
         required: true
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationDetail'
-          description: ''
+          description: Application details retrieved successfully
+        '403':
+          description: Permission denied
+        '404':
+          description: Application not found
     put:
       operationId: applications_applications_update
-      description: Update application status (admin only).
+      description: Update application status and add review notes (admin only)
+      summary: Update application status
       parameters:
       - in: path
         name: id
@@ -187,12 +213,19 @@ paths:
           type: string
         required: true
       tags:
-      - applications
+      - Applications
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ApplicationUpdateRequest'
+            examples:
+              StatusUpdateExample:
+                value:
+                  status: 2
+                  notes: Candidate has strong technical skills, moving to interview
+                    stage
+                summary: Status Update Example
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/ApplicationUpdateRequest'
@@ -205,16 +238,33 @@ paths:
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationUpdate'
-          description: ''
+          description: Application updated successfully
+        '403':
+          description: Admin permission required
+        '400':
+          description: Invalid status transition
     patch:
       operationId: applications_applications_partial_update
       description: |-
         ViewSet for managing job applications.
         Provides user-specific application listing and submission functionality.
+
+        **Authentication Required**: All endpoints require JWT authentication.
+
+        **Permissions**:
+        - Regular users can view and create their own applications
+        - Admins can view all applications and update statuses
+        - Only admins can delete applications
+
+        **Available Actions**:
+        - `list`: Get paginated list of applications
+        - `create`: Submit new job application
+        - `retrieve`: Get detailed application information
+        - `update`: Update application status (admin only)
+        - `destroy`: Delete application (admin only)
+        - `withdraw`: Withdraw application (user action)
+        - `my_applications`: Get current user's applications
+        - `statistics`: Get application statistics
       parameters:
       - in: path
         name: id
@@ -246,9 +296,9 @@ paths:
           description: ''
     delete:
       operationId: applications_applications_destroy
-      description: |-
-        ViewSet for managing job applications.
-        Provides user-specific application listing and submission functionality.
+      description: Delete an application (admin only). This is a hard delete and cannot
+        be undone.
+      summary: Delete application
       parameters:
       - in: path
         name: id
@@ -256,13 +306,17 @@ paths:
           type: string
         required: true
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '204':
-          description: No response body
+          description: Application deleted successfully
+        '403':
+          description: Admin permission required
+        '404':
+          description: Application not found
   /api/applications/applications/{id}/update-status/:
     post:
       operationId: applications_applications_update_status_create
@@ -301,9 +355,9 @@ paths:
   /api/applications/applications/{id}/withdraw/:
     post:
       operationId: applications_applications_withdraw_create
-      description: |-
-        Withdraw an application (user action).
-        Only the application owner can withdraw their application.
+      description: Withdraw a job application. Only the application owner can withdraw
+        their own application.
+      summary: Withdraw job application
       parameters:
       - in: path
         name: id
@@ -311,13 +365,17 @@ paths:
           type: string
         required: true
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '200':
-          description: No response body
+          description: Application withdrawn successfully
+        '403':
+          description: Permission denied
+        '400':
+          description: Cannot withdraw application
   /api/applications/applications/admin/pending/:
     get:
       operationId: applications_applications_admin_pending_retrieve
@@ -408,36 +466,42 @@ paths:
   /api/applications/applications/my-applications/:
     get:
       operationId: applications_applications_my_applications_retrieve
-      description: Get current user's applications.
+      description: Retrieve all applications submitted by the current user with filtering
+        and pagination.
+      summary: Get my applications
+      parameters:
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Order by: applied_at, updated_at, status__name'
+      - in: query
+        name: status__name
+        schema:
+          type: string
+        description: Filter by application status
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationDetail'
-          description: ''
+          description: User applications retrieved successfully
   /api/applications/applications/statistics/:
     get:
       operationId: applications_applications_statistics_retrieve
-      description: Get application statistics for the current user or all applications
-        (admin).
+      description: Retrieve application statistics. Regular users see their own stats,
+        admins see global statistics.
+      summary: Get application statistics
       tags:
-      - applications
+      - Applications
       security:
       - jwtAuth: []
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationDetail'
-          description: ''
+          description: Statistics retrieved successfully
   /api/applications/documents/:
     get:
       operationId: applications_documents_list
@@ -933,15 +997,14 @@ paths:
     get:
       operationId: categories_categories_list
       description: Retrieve a list of all active categories with optional filtering
-        and search.
+        and search capabilities.
       summary: List categories
       parameters:
-      - name: ordering
-        required: false
-        in: query
-        description: Which field to use when ordering the results.
+      - in: query
+        name: ordering
         schema:
           type: string
+        description: 'Order by: name, created_at, job_count (prefix with - for descending)'
       - name: page
         required: false
         in: query
@@ -952,16 +1015,17 @@ paths:
         name: parent
         schema:
           type: integer
+        description: Filter by parent category ID
       - in: query
         name: parent__slug
         schema:
           type: string
-      - name: search
-        required: false
-        in: query
-        description: A search term.
+        description: Filter by parent category slug
+      - in: query
+        name: search
         schema:
           type: string
+        description: Search in category name and description
       tags:
       - Categories
       security:
@@ -969,11 +1033,9 @@ paths:
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedCategoryListList'
-          description: ''
+          description: Categories retrieved successfully
+        '401':
+          description: Authentication required
     post:
       operationId: categories_categories_create
       description: Create a new category. Admin access required.
@@ -985,6 +1047,13 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CategoryRequest'
+            examples:
+              CategoryCreationExample:
+                value:
+                  name: Data Science
+                  description: Data science and analytics positions
+                  parent: 1
+                summary: Category Creation Example
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/CategoryRequest'
@@ -997,11 +1066,11 @@ paths:
       - bearerAuth: []
       responses:
         '201':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+          description: Category created successfully
+        '400':
+          description: Validation error
+        '403':
+          description: Admin permission required
   /api/categories/categories/{slug}/:
     get:
       operationId: categories_categories_retrieve
@@ -1021,11 +1090,9 @@ paths:
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+          description: Category details retrieved successfully
+        '404':
+          description: Category not found
     put:
       operationId: categories_categories_update
       description: Update an existing category. Admin access required.
@@ -1044,6 +1111,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CategoryRequest'
+            examples:
+              CategoryUpdateExample:
+                value:
+                  name: Software Engineering
+                  description: Updated description for software engineering positions
+                summary: Category Update Example
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/CategoryRequest'
@@ -1056,11 +1129,13 @@ paths:
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+          description: Category updated successfully
+        '400':
+          description: Validation error
+        '403':
+          description: Admin permission required
+        '404':
+          description: Category not found
     patch:
       operationId: categories_categories_partial_update
       description: Partially update an existing category. Admin access required.
@@ -1090,14 +1165,15 @@ paths:
       - bearerAuth: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Category'
-          description: ''
+          description: Category updated successfully
+        '403':
+          description: Admin permission required
+        '404':
+          description: Category not found
     delete:
       operationId: categories_categories_destroy
-      description: Delete a category. Admin access required.
+      description: Soft delete a category by setting is_active to False. Admin access
+        required.
       summary: Delete category
       parameters:
       - in: path
@@ -1113,7 +1189,11 @@ paths:
       - bearerAuth: []
       responses:
         '204':
-          description: No response body
+          description: Category deleted successfully
+        '403':
+          description: Admin permission required
+        '404':
+          description: Category not found
   /api/categories/categories/{slug}/ancestors/:
     get:
       operationId: categories_categories_ancestors_retrieve
@@ -2473,24 +2553,6 @@ paths:
           description: ''
 components:
   schemas:
-    ApplicationCreate:
-      type: object
-      description: Serializer for creating new job applications.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        cover_letter:
-          type: string
-          description: Cover letter text submitted with the application
-        documents:
-          type: array
-          items:
-            $ref: '#/components/schemas/Document'
-          readOnly: true
-      required:
-      - documents
-      - id
     ApplicationCreateRequest:
       type: object
       description: Serializer for creating new job applications.
@@ -2589,57 +2651,6 @@ components:
         notes:
           type: string
           description: Internal notes about the application (admin only)
-    ApplicationList:
-      type: object
-      description: Optimized serializer for application listings.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        job:
-          allOf:
-          - $ref: '#/components/schemas/JobList'
-          readOnly: true
-        status:
-          allOf:
-          - $ref: '#/components/schemas/ApplicationStatus'
-          readOnly: true
-        user_email:
-          type: string
-          readOnly: true
-        user_full_name:
-          type: string
-          readOnly: true
-        applied_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the application was submitted
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
-          description: When the application was last updated
-        days_since_applied:
-          type: string
-          readOnly: true
-        is_recent:
-          type: string
-          readOnly: true
-        can_withdraw:
-          type: string
-          readOnly: true
-      required:
-      - applied_at
-      - can_withdraw
-      - days_since_applied
-      - id
-      - is_recent
-      - job
-      - status
-      - updated_at
-      - user_email
-      - user_full_name
     ApplicationStatus:
       type: object
       description: Serializer for ApplicationStatus model.
@@ -2887,52 +2898,6 @@ components:
       - job_count
       - name
       - total_job_count
-    CategoryList:
-      type: object
-      description: Simplified serializer for category listings.
-      properties:
-        id:
-          type: integer
-          readOnly: true
-        name:
-          type: string
-          description: Category name (e.g., Software Development, Marketing)
-          maxLength: 100
-        description:
-          type: string
-          description: Description of the job category
-        slug:
-          type: string
-          readOnly: true
-          description: URL-friendly version of category name
-          pattern: ^[-a-zA-Z0-9_]+$
-        parent:
-          type: integer
-          nullable: true
-          description: Parent category for hierarchical structure
-        parent_name:
-          type: string
-          readOnly: true
-        job_count:
-          type: string
-          readOnly: true
-        full_path:
-          type: string
-          readOnly: true
-        level:
-          type: string
-          readOnly: true
-        is_active:
-          type: boolean
-          description: Whether this category is active for job classification
-      required:
-      - full_path
-      - id
-      - job_count
-      - level
-      - name
-      - parent_name
-      - slug
     CategoryRequest:
       type: object
       description: Serializer for Category model with hierarchical information.
@@ -3875,29 +3840,6 @@ components:
       required:
       - code
       - name
-    PaginatedApplicationListList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/ApplicationList'
     PaginatedApplicationStatusListList:
       type: object
       required:
@@ -3944,29 +3886,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Category'
-    PaginatedCategoryListList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/CategoryList'
     PaginatedCompanyList:
       type: object
       required:
