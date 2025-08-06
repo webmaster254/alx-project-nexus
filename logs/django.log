@@ -100,3 +100,202 @@ INFO 2025-08-06 02:57:13,473 autoreload 440995 139733086294080 Watching for file
 WARNING 2025-08-06 02:57:31,933 log 440995 139732931573440 Unauthorized: /api/categories/
 WARNING 2025-08-06 02:57:31,934 basehttp 440995 139732931573440 "GET /api/categories/ HTTP/1.1" 401 58
 INFO 2025-08-06 02:57:53,334 basehttp 440995 139732931573440 "GET /api/docs/ HTTP/1.1" 200 4646
+WARNING 2025-08-06 17:43:16,463 log 40776 140429989134400 Bad Request: /api/applications/api/applications/
+ERROR 2025-08-06 17:46:48,641 log 41388 140532414607424 Internal Server Error: /api/applications/api/applications/5/withdraw/
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/apps/applications/views.py", line 142, in withdraw
+    serializer.is_valid(raise_exception=True)
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/serializers.py", line 218, in is_valid
+    assert hasattr(self, 'initial_data'), (
+AssertionError: Cannot call `.is_valid()` as no `data=` keyword argument was passed when instantiating the serializer instance.
+WARNING 2025-08-06 17:52:59,924 log 42456 140450227974208 Bad Request: /api/applications/api/applications/
+WARNING 2025-08-06 17:53:15,944 log 42456 140450227974208 Bad Request: /api/applications/api/applications/
+WARNING 2025-08-06 17:53:39,150 log 42456 140450227974208 Bad Request: /api/applications/api/applications/
+WARNING 2025-08-06 17:54:20,300 log 42456 140450227974208 Unauthorized: /api/applications/api/applications/
+WARNING 2025-08-06 17:56:05,902 log 42456 140450227974208 Forbidden: /api/applications/api/applications/21/
+WARNING 2025-08-06 17:56:21,680 log 42456 140450227974208 Forbidden: /api/applications/api/applications/22/
+WARNING 2025-08-06 17:56:37,510 log 42456 140450227974208 Not Found: /api/applications/api/applications/23/withdraw/
+WARNING 2025-08-06 18:04:56,374 log 44746 140126039261248 Forbidden: /api/applications/applications/26/
+WARNING 2025-08-06 18:13:32,656 log 46084 140634905645120 Bad Request: /api/applications/applications/
+WARNING 2025-08-06 18:43:52,231 log 57001 140561746894912 Bad Request: /api/applications/applications/
+WARNING 2025-08-06 18:44:11,290 log 57001 140561746894912 Bad Request: /api/applications/applications/
+WARNING 2025-08-06 18:44:26,315 log 57001 140561746894912 Bad Request: /api/applications/applications/
+WARNING 2025-08-06 18:45:08,225 log 57001 140561746894912 Unauthorized: /api/applications/applications/
+WARNING 2025-08-06 18:48:37,098 log 57001 140561746894912 Forbidden: /api/applications/applications/50/
+WARNING 2025-08-06 18:48:55,428 log 57001 140561746894912 Not Found: /api/applications/applications/51/withdraw/
+ERROR 2025-08-06 19:01:22,697 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:22,732 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:22,808 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:22,846 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:22,878 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:22,911 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:23,279 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:23,315 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:23,365 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:23,407 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+ERROR 2025-08-06 19:01:23,442 log 61967 139659613605952 Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
