@@ -74,6 +74,7 @@ class IndustryFactory(DjangoModelFactory):
     
     class Meta:
         model = Industry
+        django_get_or_create = ('name',)
     
     name = factory.Iterator([
         'Technology', 'Healthcare', 'Finance', 'Education', 'Manufacturing',
@@ -89,12 +90,13 @@ class JobTypeFactory(DjangoModelFactory):
     
     class Meta:
         model = JobType
+        django_get_or_create = ('name',)
     
     name = factory.Iterator([
         'Full-time', 'Part-time', 'Contract', 'Temporary', 
         'Internship', 'Freelance', 'Remote', 'Hybrid'
     ])
-    code = factory.LazyAttribute(lambda obj: obj.name.lower().replace('-', '_'))
+    code = factory.LazyAttribute(lambda obj: obj.name.lower().replace(' ', '-'))
     description = factory.Faker('text', max_nb_chars=150)
     slug = factory.LazyAttribute(lambda obj: obj.name.lower().replace(' ', '-'))
     is_active = True
@@ -106,11 +108,7 @@ class CategoryFactory(DjangoModelFactory):
     class Meta:
         model = Category
     
-    name = factory.Iterator([
-        'Software Development', 'Data Science', 'Product Management',
-        'Design', 'Marketing', 'Sales', 'Customer Support', 'Operations',
-        'Human Resources', 'Finance', 'Legal', 'Engineering'
-    ])
+    name = factory.Sequence(lambda n: f'Category {n}')
     description = factory.Faker('text', max_nb_chars=200)
     slug = factory.LazyAttribute(lambda obj: obj.name.lower().replace(' ', '-'))
     parent = None
@@ -237,6 +235,7 @@ class ApplicationStatusFactory(DjangoModelFactory):
     
     class Meta:
         model = ApplicationStatus
+        django_get_or_create = ('name',)
     
     name = factory.Iterator(['pending', 'reviewed', 'accepted', 'rejected', 'withdrawn'])
     display_name = factory.LazyAttribute(lambda obj: {

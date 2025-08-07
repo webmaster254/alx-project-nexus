@@ -12,18 +12,19 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
+        'OPTIONS': {
+            'timeout': 20,
+        },
     }
 }
 
-# Disable migrations for faster tests
-class DisableMigrations:
-    def __contains__(self, item):
-        return True
-    
-    def __getitem__(self, item):
-        return None
+# Skip PostgreSQL-specific migrations in tests
+MIGRATION_MODULES = {
+    'jobs': 'tests.migrations.jobs',
+}
 
-MIGRATION_MODULES = DisableMigrations()
+# Enable migrations for tests to create proper database schema
+# MIGRATION_MODULES = DisableMigrations()
 
 # Faster password hashing for tests
 PASSWORD_HASHERS = [
