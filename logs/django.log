@@ -439,3 +439,64 @@ Traceback (most recent call last):
   File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
     raise DisallowedHost(msg)
 django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+INFO 2025-08-07 02:28:43,634 basehttp 391717 140628214150848 "GET /api/health/live/ HTTP/1.1" 200 49
+INFO 2025-08-07 02:30:38,707 basehttp 391717 140628214150848 "GET /api/health/ready/ HTTP/1.1" 200 84
+INFO 2025-08-07 02:32:10,884 health 391717 140628214150848 Health check completed: unhealthy in 3.247s
+ERROR 2025-08-07 02:32:10,997 log 391717 140628214150848 Internal Server Error: /api/health/
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/response.py", line 74, in rendered_content
+    ret = renderer.render(self.data, accepted_media_type, context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/renderers.py", line 100, in render
+    ret = json.dumps(
+          ^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/utils/json.py", line 25, in dumps
+    return json.dumps(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 258, in iterencode
+    return _iterencode(o, 0)
+           ^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/utils/encoders.py", line 67, in default
+    return super().default(obj)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+TypeError: Object of type PosixPath is not JSON serializable
+ERROR 2025-08-07 02:32:11,000 basehttp 391717 140628214150848 "GET /api/health/ HTTP/1.1" 500 132708
+INFO 2025-08-07 02:34:57,677 health 394557 140113973606080 Health check completed: unhealthy in 2.862s
+ERROR 2025-08-07 02:34:57,680 log 394557 140113973606080 Service Unavailable: /api/health/
+ERROR 2025-08-07 02:34:57,681 basehttp 394557 140113973606080 "GET /api/health/ HTTP/1.1" 503 686
+INFO 2025-08-07 02:35:20,892 basehttp 394557 140113973606080 "GET /api/health/live/ HTTP/1.1" 200 48
+INFO 2025-08-07 02:35:38,844 basehttp 394557 140113973606080 "GET /api/health/ready/ HTTP/1.1" 200 84
+ERROR 2025-08-07 02:36:07,949 exceptions 394557 140113973606080 API Exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value - Path: /api/metrics/ - Method: GET - User: Anonymous
+ERROR 2025-08-07 02:36:07,950 exceptions 394557 140113973606080 Unhandled exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value
+ERROR 2025-08-07 02:36:07,950 log 394557 140113973606080 Internal Server Error: /api/metrics/
+ERROR 2025-08-07 02:36:07,951 basehttp 394557 140113973606080 "GET /api/metrics/ HTTP/1.1" 500 150
+ERROR 2025-08-07 02:40:24,347 exceptions 394557 140113973606080 API Exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value - Path: /api/metrics/ - Method: GET - User: Anonymous
+ERROR 2025-08-07 02:40:24,354 exceptions 394557 140113973606080 Unhandled exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value
+ERROR 2025-08-07 02:40:24,359 log 394557 140113973606080 Internal Server Error: /api/metrics/
+ERROR 2025-08-07 02:40:24,380 basehttp 394557 140113973606080 "GET /api/metrics/ HTTP/1.1" 500 150
+ERROR 2025-08-07 02:41:00,790 exceptions 394557 140113973606080 API Exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value - Path: /api/metrics/ - Method: GET - User: Anonymous
+ERROR 2025-08-07 02:41:00,792 exceptions 394557 140113973606080 Unhandled exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value
+ERROR 2025-08-07 02:41:00,794 log 394557 140113973606080 Internal Server Error: /api/metrics/
+ERROR 2025-08-07 02:41:00,795 basehttp 394557 140113973606080 "GET /api/metrics/ HTTP/1.1" 500 150
+ERROR 2025-08-07 02:43:21,485 exceptions 394557 140113973606080 API Exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value - Path: /api/metrics/ - Method: GET - User: Anonymous
+ERROR 2025-08-07 02:43:21,485 exceptions 394557 140113973606080 Unhandled exception: UnboundLocalError - cannot access local variable 'os' where it is not associated with a value
+ERROR 2025-08-07 02:43:21,487 log 394557 140113973606080 Internal Server Error: /api/metrics/
+ERROR 2025-08-07 02:43:21,488 basehttp 394557 140113973606080 "GET /api/metrics/ HTTP/1.1" 500 150
+INFO 2025-08-07 02:46:14,737 basehttp 399418 140135509259968 "GET /api/metrics/ HTTP/1.1" 200 150
