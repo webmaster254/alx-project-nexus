@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { jobService } from '../jobService';
 import { httpClient } from '../index';
-import { Job, PaginatedResponse } from '../../types';
+import type { Job, PaginatedResponse } from '../../types';
 
 // Mock the httpClient
 vi.mock('../index', () => ({
@@ -32,7 +32,7 @@ describe('JobService', () => {
     required_skills: 'JavaScript, React',
     preferred_skills: 'TypeScript',
     application_deadline: '2024-12-31',
-    external_url: null,
+    external_url: undefined,
     is_active: true,
     is_featured: false,
     views_count: 100,
@@ -75,8 +75,8 @@ describe('JobService', () => {
 
   const mockPaginatedResponse: PaginatedResponse<Job> = {
     count: 1,
-    next: null,
-    previous: null,
+    next: undefined,
+    previous: undefined,
     results: [mockJob],
   };
 
@@ -209,20 +209,32 @@ describe('JobService', () => {
 
   describe('getSimilarJobs', () => {
     it('should fetch similar jobs', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: [mockJob], status: 200 });
+      const mockResponse = {
+        count: 1,
+        next: null,
+        previous: null,
+        results: [mockJob]
+      };
+      mockHttpClient.get.mockResolvedValue({ data: mockResponse, status: 200 });
 
       const result = await jobService.getSimilarJobs(1);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/1/similar/', { limit: 5 });
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/similar/', { job_id: 1, page_size: 5 });
       expect(result).toEqual([mockJob]);
     });
 
     it('should fetch similar jobs with custom limit', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: [mockJob], status: 200 });
+      const mockResponse = {
+        count: 1,
+        next: null,
+        previous: null,
+        results: [mockJob]
+      };
+      mockHttpClient.get.mockResolvedValue({ data: mockResponse, status: 200 });
 
       const result = await jobService.getSimilarJobs(1, 3);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/1/similar/', { limit: 3 });
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/similar/', { job_id: 1, page_size: 3 });
       expect(result).toEqual([mockJob]);
     });
   });

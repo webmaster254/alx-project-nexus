@@ -141,3 +141,88 @@ export interface ApiResponse<T> {
 }
 
 export type ExperienceLevel = 'entry' | 'junior' | 'mid' | 'senior' | 'lead' | 'executive';
+
+// Context State Types
+export interface JobState {
+  jobs: Job[];
+  currentJob: Job | null;
+  featuredJobs: Job[];
+  recentJobs: Job[];
+  similarJobs: Job[];
+  totalCount: number;
+  currentPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface FilterState {
+  searchQuery: string;
+  categories: number[];
+  locations: string[];
+  experienceLevels: ExperienceLevel[];
+  salaryRange: [number, number];
+  jobTypes: number[];
+  isRemote: boolean | null;
+  isActive: boolean;
+}
+
+export interface User {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  date_joined: string;
+  profile?: {
+    phone?: string;
+    location?: string;
+    bio?: string;
+    experience_years?: number;
+    skills?: string[];
+    resume_url?: string;
+  };
+}
+
+export interface UserState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  token: string | null;
+}
+
+// Action Types for Reducers
+export type JobAction =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_JOBS'; payload: { jobs: Job[]; totalCount: number; currentPage: number; hasNextPage: boolean; hasPreviousPage: boolean } }
+  | { type: 'SET_CURRENT_JOB'; payload: Job | null }
+  | { type: 'SET_FEATURED_JOBS'; payload: Job[] }
+  | { type: 'SET_RECENT_JOBS'; payload: Job[] }
+  | { type: 'SET_SIMILAR_JOBS'; payload: Job[] }
+  | { type: 'APPEND_JOBS'; payload: Job[] }
+  | { type: 'CLEAR_JOBS' }
+  | { type: 'RESET_STATE' };
+
+export type FilterAction =
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'SET_CATEGORIES'; payload: number[] }
+  | { type: 'SET_LOCATIONS'; payload: string[] }
+  | { type: 'SET_EXPERIENCE_LEVELS'; payload: ExperienceLevel[] }
+  | { type: 'SET_SALARY_RANGE'; payload: [number, number] }
+  | { type: 'SET_JOB_TYPES'; payload: number[] }
+  | { type: 'SET_IS_REMOTE'; payload: boolean | null }
+  | { type: 'SET_IS_ACTIVE'; payload: boolean }
+  | { type: 'CLEAR_FILTERS' }
+  | { type: 'RESET_FILTERS' };
+
+export type UserAction =
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null }
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_AUTHENTICATED'; payload: boolean }
+  | { type: 'SET_TOKEN'; payload: string | null }
+  | { type: 'LOGOUT' }
+  | { type: 'RESET_STATE' };

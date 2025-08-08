@@ -1,5 +1,5 @@
 import { httpClient } from './index';
-import { Job, PaginatedResponse, JobListParams, FilterParams, ApiResponse } from '../types';
+import type { Job, PaginatedResponse, JobListParams, FilterParams, ApiResponse } from '../types';
 
 export class JobService {
   private readonly baseUrl = '/jobs';
@@ -67,11 +67,11 @@ export class JobService {
    * Get similar jobs based on a job ID
    */
   async getSimilarJobs(jobId: number, limit: number = 5): Promise<Job[]> {
-    const response: ApiResponse<Job[]> = await httpClient.get(
-      `${this.baseUrl}/${jobId}/similar/`,
-      { limit }
+    const response: ApiResponse<PaginatedResponse<Job>> = await httpClient.get(
+      `${this.baseUrl}/similar/`,
+      { job_id: jobId, page_size: limit }
     );
-    return response.data;
+    return response.data.results;
   }
 
   /**

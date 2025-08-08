@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { categoryService } from '../categoryService';
 import { httpClient } from '../index';
-import { Category, PaginatedResponse, Job } from '../../types';
+import type { Category, PaginatedResponse, Job } from '../../types';
 
 // Mock the httpClient
 vi.mock('../index', () => ({
@@ -21,14 +21,14 @@ describe('CategoryService', () => {
     id: 1,
     name: 'Engineering',
     description: 'Engineering jobs',
-    parent_id: null,
+    parent_id: undefined,
     children: [],
   };
 
   const mockPaginatedCategoryResponse: PaginatedResponse<Category> = {
     count: 1,
-    next: null,
-    previous: null,
+    next: undefined,
+    previous: undefined,
     results: [mockCategory],
   };
 
@@ -47,7 +47,7 @@ describe('CategoryService', () => {
     required_skills: 'JavaScript, React',
     preferred_skills: 'TypeScript',
     application_deadline: '2024-12-31',
-    external_url: null,
+    external_url: undefined,
     is_active: true,
     is_featured: false,
     views_count: 100,
@@ -84,8 +84,8 @@ describe('CategoryService', () => {
 
   const mockPaginatedJobResponse: PaginatedResponse<Job> = {
     count: 1,
-    next: null,
-    previous: null,
+    next: undefined,
+    previous: undefined,
     results: [mockJob],
   };
 
@@ -173,8 +173,8 @@ describe('CategoryService', () => {
       };
       const subcategoryResponse: PaginatedResponse<Category> = {
         count: 1,
-        next: null,
-        previous: null,
+        next: undefined,
+        previous: undefined,
         results: [subcategory],
       };
 
@@ -217,8 +217,8 @@ describe('CategoryService', () => {
       };
       const hierarchyResponse: PaginatedResponse<Category> = {
         count: 1,
-        next: null,
-        previous: null,
+        next: undefined,
+        previous: undefined,
         results: [categoryWithChildren],
       };
 

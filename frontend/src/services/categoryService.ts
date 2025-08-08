@@ -1,5 +1,5 @@
 import { httpClient } from './index';
-import { Category, PaginatedResponse, Job, ApiResponse } from '../types';
+import type { Category, PaginatedResponse, Job, ApiResponse } from '../types';
 
 export class CategoryService {
   private readonly baseUrl = '/categories';
