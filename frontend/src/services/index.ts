@@ -1,10 +1,10 @@
 // API service layer
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-import { ApiError, ApiResponse } from '../types';
+import axios from 'axios';
+import type { ApiError, ApiResponse } from '../types';
 
 // HTTP Client Configuration
 class HttpClient {
-  private client: AxiosInstance;
+  private client: any;
 
   constructor() {
     this.client = axios.create({
@@ -21,7 +21,7 @@ class HttpClient {
   private setupInterceptors(): void {
     // Request interceptor
     this.client.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         // Add auth token if available
         const token = localStorage.getItem('auth_token');
         if (token) {
@@ -35,7 +35,7 @@ class HttpClient {
         
         return config;
       },
-      (error) => {
+      (error: any) => {
         console.error('[API Request Error]', error);
         return Promise.reject(error);
       }
@@ -43,7 +43,7 @@ class HttpClient {
 
     // Response interceptor
     this.client.interceptors.response.use(
-      (response: AxiosResponse) => {
+      (response: any) => {
         // Log response in development
         if (import.meta.env.DEV) {
           console.log(`[API Response] ${response.status} ${response.config.url}`, response.data);
@@ -51,7 +51,7 @@ class HttpClient {
         
         return response;
       },
-      (error: AxiosError) => {
+      (error: any) => {
         const apiError: ApiError = {
           message: 'An error occurred',
           status: error.response?.status || 500,
@@ -83,7 +83,7 @@ class HttpClient {
 
   // HTTP methods
   async get<T>(url: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
-    const response = await this.client.get<T>(url, { params });
+    const response = await this.client.get(url, { params });
     return {
       data: response.data,
       status: response.status,
@@ -91,7 +91,7 @@ class HttpClient {
   }
 
   async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.post<T>(url, data);
+    const response = await this.client.post(url, data);
     return {
       data: response.data,
       status: response.status,
@@ -99,7 +99,7 @@ class HttpClient {
   }
 
   async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.put<T>(url, data);
+    const response = await this.client.put(url, data);
     return {
       data: response.data,
       status: response.status,
@@ -107,7 +107,7 @@ class HttpClient {
   }
 
   async patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.patch<T>(url, data);
+    const response = await this.client.patch(url, data);
     return {
       data: response.data,
       status: response.status,
@@ -115,7 +115,7 @@ class HttpClient {
   }
 
   async delete<T>(url: string): Promise<ApiResponse<T>> {
-    const response = await this.client.delete<T>(url);
+    const response = await this.client.delete(url);
     return {
       data: response.data,
       status: response.status,
@@ -129,11 +129,30 @@ class HttpClient {
     
     if (additionalData) {
       Object.keys(additionalData).forEach(key => {
-        formData.append(key, additionalData[key]);
+        const value = additionalData[key];
+        if (typeof value === 'string' || value instanceof Blob) {
+          formData.append(key, value);
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
       });
     }
 
-    const response = await this.client.post<T>(url, formData, {
+    const response = await this.client.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
+  // Multipart form data method
+  async postMultipart<T>(url: string, formData: FormData): Promise<ApiResponse<T>> {
+    const response = await this.client.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -152,6 +171,8 @@ export const httpClient = new HttpClient();
 // Export services
 export { jobService, JobService } from './jobService';
 export { categoryService, CategoryService } from './categoryService';
+export { authService, AuthService } from './authService';
+export { applicationService, ApplicationService } from './applicationService';
 
 // Export types for use in services
 export type { ApiError, ApiResponse } from '../types';
