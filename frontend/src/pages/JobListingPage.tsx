@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useJob } from '../contexts/JobContext';
 import { useFilter } from '../contexts/FilterContext';
 import { useBookmark } from '../contexts/BookmarkContext';
-import { useUrlFilters, usePullToRefresh, useResponsive, useInfiniteScroll, usePerformanceTracking } from '../hooks';
+import { useUrlFilters, usePullToRefresh, useResponsive, useInfiniteScroll, usePerformanceTracking, useInteractionTracking, useApiPerformanceTracking } from '../hooks';
 import JobCard from '../components/job/JobCard';
 import JobCardSkeleton from '../components/job/JobCardSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
@@ -23,8 +23,10 @@ const JobListingPage: React.FC = () => {
   const mainRef = useRef<HTMLElement>(null);
   const { isMobile, isTablet } = useResponsive();
   
-  // Performance tracking
-  const { trackInteraction, trackApiCall } = usePerformanceTracking('job-listing');
+  // Performance & analytics tracking
+  usePerformanceTracking('job-listing');
+  const { trackClick } = useInteractionTracking();
+  const { trackApiCall } = useApiPerformanceTracking();
 
   // Sort options
   const sortOptions: SortOption[] = [
@@ -60,24 +62,23 @@ const JobListingPage: React.FC = () => {
     }
   };
 
-  const { attachPullToRefreshListeners } = usePullToRefresh(handleRefresh, 80);
+  const { setContainer } = usePullToRefresh({ onRefresh: handleRefresh, threshold: 80 });
 
   const {
-    jobs,
-    isLoading,
-    error,
-    totalCount,
-    currentPage,
-    hasNextPage
-  } = jobState;
+    jobs = [],
+    isLoading = false,
+    error = null,
+    totalCount = 0,
+    currentPage = 1,
+    hasNextPage = false,
+  } = jobState || {} as typeof jobState;
 
-  // Attach pull-to-refresh listeners
+  // Provide container element to pull-to-refresh hook
   useEffect(() => {
     if (mainRef.current) {
-      const cleanup = attachPullToRefreshListeners(mainRef.current);
-      return cleanup;
+      setContainer(mainRef.current);
     }
-  }, [attachPullToRefreshListeners]);
+  }, [setContainer]);
 
   // Load bookmarked jobs on mount
   useEffect(() => {
@@ -106,25 +107,37 @@ const JobListingPage: React.FC = () => {
   // Load jobs when component mounts or filters/sorting change
   useEffect(() => {
     const loadJobs = async () => {
-      const startTime = performance.now();
       try {
-        await fetchJobs({
-          page: 1,
-          page_size: 20,
-          search: filterState.searchQuery || undefined,
-          category: filterState.categories.length > 0 ? filterState.categories : undefined,
-          location: filterState.locations.length > 0 ? filterState.locations : undefined,
-          experience_level: filterState.experienceLevels.length > 0 ? filterState.experienceLevels : undefined,
-          is_remote: filterState.isRemote !== null ? filterState.isRemote : undefined,
-          job_type: filterState.jobTypes.length > 0 ? filterState.jobTypes : undefined,
-          salary_min: filterState.salaryRange[0] > 0 ? filterState.salaryRange[0] : undefined,
-          salary_max: filterState.salaryRange[1] < 1000000 ? filterState.salaryRange[1] : undefined,
-          ordering: sortBy,
-        });
-        trackApiCall('jobs-fetch', startTime);
+        const runner = typeof trackApiCall === 'function'
+          ? () => trackApiCall('jobs-fetch', () => fetchJobs({
+            page: 1,
+            page_size: 20,
+            search: filterState.searchQuery || undefined,
+            category: filterState.categories.length > 0 ? filterState.categories : undefined,
+            location: filterState.locations.length > 0 ? filterState.locations : undefined,
+            experience_level: filterState.experienceLevels.length > 0 ? filterState.experienceLevels : undefined,
+            is_remote: filterState.isRemote !== null ? filterState.isRemote : undefined,
+            job_type: filterState.jobTypes.length > 0 ? filterState.jobTypes : undefined,
+            salary_min: filterState.salaryRange[0] > 0 ? filterState.salaryRange[0] : undefined,
+            salary_max: filterState.salaryRange[1] < 1000000 ? filterState.salaryRange[1] : undefined,
+            ordering: sortBy,
+          }))
+          : () => fetchJobs({
+            page: 1,
+            page_size: 20,
+            search: filterState.searchQuery || undefined,
+            category: filterState.categories.length > 0 ? filterState.categories : undefined,
+            location: filterState.locations.length > 0 ? filterState.locations : undefined,
+            experience_level: filterState.experienceLevels.length > 0 ? filterState.experienceLevels : undefined,
+            is_remote: filterState.isRemote !== null ? filterState.isRemote : undefined,
+            job_type: filterState.jobTypes.length > 0 ? filterState.jobTypes : undefined,
+            salary_min: filterState.salaryRange[0] > 0 ? filterState.salaryRange[0] : undefined,
+            salary_max: filterState.salaryRange[1] < 1000000 ? filterState.salaryRange[1] : undefined,
+            ordering: sortBy,
+          });
+        await runner();
       } catch (err) {
         console.error('Failed to load jobs:', err);
-        trackApiCall('jobs-fetch-error', startTime);
       }
     };
 
@@ -143,7 +156,7 @@ const JobListingPage: React.FC = () => {
   ]);
 
   const handleJobClick = (job: Job) => {
-    trackInteraction('job-click');
+    trackClick('job-click');
     navigate(`/jobs/${job.id}`);
   };
 

@@ -14,4 +14,5 @@ export {
   usePullToRefreshWithFeedback 
 } from './useInfiniteScroll';
 export { usePerformanceTracking } from './usePerformanceTracking';
+export { useInteractionTracking, useApiPerformanceTracking } from './usePerformanceTracking';
 export { usePullToRefresh } from './usePullToRefresh';

@@ -215,12 +215,12 @@ export function FilterProvider({ children }: FilterProviderProps) {
 
   const getActiveFiltersCount = (): number => {
     let count = 0;
-    if (state.searchQuery.length > 0) count++;
-    if (state.categories.length > 0) count++;
-    if (state.locations.length > 0) count++;
-    if (state.experienceLevels.length > 0) count++;
-    if (state.salaryRange[0] > 0 || state.salaryRange[1] < 200000) count++;
-    if (state.jobTypes.length > 0) count++;
+    if ((state.searchQuery || '').length > 0) count++;
+    if ((state.categories || []).length > 0) count++;
+    if ((state.locations || []).length > 0) count++;
+    if ((state.experienceLevels || []).length > 0) count++;
+    if ((state.salaryRange || [0, 200000])[0] > 0 || (state.salaryRange || [0, 200000])[1] < 200000) count++;
+    if ((state.jobTypes || []).length > 0) count++;
     if (state.isRemote !== null) count++;
     return count;
   };

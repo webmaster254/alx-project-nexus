@@ -49,8 +49,8 @@ class PerformanceMonitor {
 
     // First Input Delay (FID)
     this.observeMetric('first-input', (entries) => {
-      const firstEntry = entries[0];
-      this.recordMetric('FID', firstEntry.processingStart - firstEntry.startTime);
+      const firstEntry = entries[0] as PerformanceEventTiming as any;
+      this.recordMetric('FID', (firstEntry.processingStart as number) - (firstEntry.startTime as number));
     });
 
     // Cumulative Layout Shift (CLS)
@@ -186,6 +186,11 @@ class PerformanceMonitor {
     this.observers.forEach(observer => observer.disconnect());
     this.observers = [];
   }
+
+  // Public method to record a custom metric from outside the class
+  public recordCustomMetric(name: string, value: number): void {
+    this.recordMetric(name, value);
+  }
 }
 
 // Global performance monitor instance
@@ -213,9 +218,9 @@ export const initializeAnalytics = (): void => {
   document.head.appendChild(script);
 
   // Initialize gtag
-  window.dataLayer = window.dataLayer || [];
+  (window as any).dataLayer = (window as any).dataLayer || [];
   function gtag(...args: any[]) {
-    window.dataLayer.push(args);
+    (window as any).dataLayer.push(args);
   }
   (window as any).gtag = gtag;
 
@@ -227,22 +232,77 @@ export const initializeAnalytics = (): void => {
 
 // Track page views
 export const trackPageView = (path: string): void => {
-  if (!config.enableAnalytics || typeof gtag === 'undefined') return;
+  const g = (window as any).gtag;
+  if (!config.enableAnalytics || typeof g === 'undefined') return;
 
-  gtag('config', config.googleAnalyticsId, {
+  g('config', config.googleAnalyticsId, {
     page_path: path,
   });
 };
 
 // Track custom events
 export const trackEvent = (action: string, category: string, label?: string, value?: number): void => {
-  if (!config.enableAnalytics || typeof gtag === 'undefined') return;
+  const g = (window as any).gtag;
+  if (!config.enableAnalytics || typeof g === 'undefined') return;
 
-  gtag('event', action, {
+  g('event', action, {
     event_category: category,
     event_label: label,
     value: value,
   });
+};
+
+// Mark a point in time for user timing measurements
+export const trackUserTiming = (markName: string): void => {
+  try {
+    if (typeof performance !== 'undefined' && typeof performance.mark === 'function') {
+      performance.mark(markName);
+    }
+  } catch (error) {
+    if (config.enableDebugMode) {
+      console.warn('trackUserTiming failed:', error);
+    }
+  }
+};
+
+// Measure duration between two marks (or from start mark to now) and record it
+export const measureUserTiming = (measureName: string, startMark: string, endMark?: string): number | null => {
+  try {
+    if (typeof performance === 'undefined' || typeof performance.measure !== 'function') {
+      return null;
+    }
+
+    const end = endMark || `${measureName}-end`;
+    if (!endMark && typeof performance.mark === 'function') {
+      performance.mark(end);
+    }
+
+    performance.measure(measureName, startMark, end);
+    const entries = performance.getEntriesByName(measureName, 'measure') as PerformanceEntry[];
+    const last = entries[entries.length - 1] as PerformanceMeasure | undefined;
+    const duration = last ? (last as any).duration ?? (last as PerformanceMeasure).duration : null;
+    if (duration != null) {
+      performanceMonitor.recordCustomMetric(measureName, duration as number);
+      return duration as number;
+    }
+    return null;
+  } catch (error) {
+    if (config.enableDebugMode) {
+      console.warn('measureUserTiming failed:', error);
+    }
+    return null;
+  }
+};
+
+// Record an arbitrary numeric metric
+export const trackCustomMetric = (name: string, value: number): void => {
+  try {
+    performanceMonitor.recordCustomMetric(name, value);
+  } catch (error) {
+    if (config.enableDebugMode) {
+      console.warn('trackCustomMetric failed:', error);
+    }
+  }
 };
 
 export default {
@@ -251,4 +311,7 @@ export default {
   initializeAnalytics,
   trackPageView,
   trackEvent,
+  trackUserTiming,
+  measureUserTiming,
+  trackCustomMetric,
 };

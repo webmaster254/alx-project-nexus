@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db.models import Q
@@ -58,7 +58,7 @@ class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
             return True
         
         # Write permissions are only allowed for the job creator or admin users
-        return obj.created_by == request.user or request.user.is_admin
+        return obj.created_by == request.user or (request.user.is_authenticated and hasattr(request.user, 'is_admin') and request.user.is_admin)
 
 
 @extend_schema_view(
@@ -429,8 +429,10 @@ class JobViewSet(viewsets.ModelViewSet):
     queryset = Job.objects.select_related(
         'company', 'industry', 'job_type', 'created_by', 'updated_by'
     ).prefetch_related('categories').filter(is_active=True)
-    
-    permission_classes = [IsAuthenticated, IsOwnerOrAdminOrReadOnly]
+
+    # Allow unauthenticated users to read (GET/HEAD/OPTIONS),
+    # while restricting write operations to authenticated users.
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrAdminOrReadOnly]
     filter_backends = [
         DjangoFilterBackend,
         AdvancedJobSearchFilter,
@@ -470,7 +472,10 @@ class JobViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         
         # Allow admins to see inactive jobs with a query parameter
-        if self.request.user.is_admin and self.request.query_params.get('include_inactive'):
+        if (self.request.user.is_authenticated and 
+            hasattr(self.request.user, 'is_admin') and 
+            self.request.user.is_admin and 
+            self.request.query_params.get('include_inactive')):
             queryset = Job.objects.select_related(
                 'company', 'industry', 'job_type', 'created_by', 'updated_by'
             ).prefetch_related('categories').all()
@@ -612,7 +617,7 @@ class JobViewSet(viewsets.ModelViewSet):
             )
         
         # Check permissions
-        if not (request.user.is_admin or job.created_by == request.user):
+        if not ((request.user.is_authenticated and hasattr(request.user, 'is_admin') and request.user.is_admin) or job.created_by == request.user):
             return Response(
                 {'error': 'You do not have permission to reactivate this job.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -710,7 +715,7 @@ class JobViewSet(viewsets.ModelViewSet):
             )
         }
     )
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def search(self, request):
         """
         Advanced search endpoint with multiple search criteria.
@@ -768,7 +773,7 @@ class JobViewSet(viewsets.ModelViewSet):
             )
         }
     )
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def featured(self, request):
         """
         Get featured jobs.
@@ -784,7 +789,7 @@ class JobViewSet(viewsets.ModelViewSet):
         serializer = JobListSerializer(queryset, many=True)
         return Response(serializer.data)
     
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def recent(self, request):
         """
         Get recently posted jobs (last 7 days by default).

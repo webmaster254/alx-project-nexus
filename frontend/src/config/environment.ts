@@ -42,7 +42,7 @@ const parseNumber = (value: string | undefined, defaultValue: number): number =>
 
 // Environment configuration
 export const config: EnvironmentConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api',
   apiTimeout: parseNumber(import.meta.env.VITE_API_TIMEOUT, 10000),
   appName: import.meta.env.VITE_APP_NAME || 'Job Board',
   appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth';
 import { JobProvider } from './contexts/JobContext';
 import { FilterProvider } from './contexts/FilterContext';
+import { BookmarkProvider } from './contexts/BookmarkContext';
 import { UserProvider } from './contexts/UserContext';
 import { Header, ErrorBoundary, OfflineIndicator, OfflineBanner, BottomNavigation, LoadingSpinner, PerformanceMonitor } from './components/common';
 import { performanceService } from './services';
@@ -40,8 +41,9 @@ const App: React.FC = () => {
     <ErrorBoundary>
       <Router>
         <UserProvider>
-          <FilterProvider>
-            <JobProvider>
+          <BookmarkProvider>
+            <FilterProvider>
+              <JobProvider>
               <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
                 <OfflineBanner />
                 <OfflineIndicator />
@@ -75,8 +77,9 @@ const App: React.FC = () => {
                 <BottomNavigation />
                 <PerformanceMonitor />
               </div>
-            </JobProvider>
-          </FilterProvider>
+              </JobProvider>
+            </FilterProvider>
+          </BookmarkProvider>
         </UserProvider>
       </Router>
     </ErrorBoundary>

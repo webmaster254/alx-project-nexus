@@ -134,7 +134,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   };
 
   const activeFiltersCount = getActiveFiltersCount();
-  const displayedCategories = showAllCategories ? categories : categories.slice(0, 8);
+  const displayedCategories = showAllCategories ? categories : (categories || []).slice(0, 8);
 
   const sidebarContent = (
     <div className="space-y-6">
@@ -196,12 +196,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <span className="ml-3 text-sm text-gray-700 select-none">{category.name}</span>
               </label>
             ))}
-            {categories.length > 8 && (
+            {(categories || []).length > 8 && (
               <button
                 onClick={() => setShowAllCategories(!showAllCategories)}
                 className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:underline"
               >
-                {showAllCategories ? 'Show less' : `Show ${categories.length - 8} more`}
+                {showAllCategories ? 'Show less' : `Show ${(categories || []).length - 8} more`}
               </button>
             )}
           </div>
@@ -225,7 +225,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </div>
 
         {/* Selected Locations */}
-        {state.locations.length > 0 && (
+        {(state.locations || []).length > 0 && (
           <div className="mb-3">
             <div className="flex flex-wrap gap-2">
               {state.locations.map((location) => (
