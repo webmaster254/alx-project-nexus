@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFilter } from '../../contexts/FilterContext';
 import { categoryService } from '../../services/categoryService';
+import { useSwipeGesture } from '../../hooks';
 import type { Category, ExperienceLevel } from '../../types';
 
 interface FilterSidebarProps {
@@ -34,6 +35,17 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [locationInput, setLocationInput] = useState('');
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Swipe gesture for mobile sidebar
+  const { attachSwipeListeners } = useSwipeGesture({
+    onSwipeLeft: () => {
+      if (isMobile && onClose) {
+        onClose();
+      }
+    },
+    threshold: 50,
+  });
 
   // Experience level options
   const experienceLevels: { value: ExperienceLevel; label: string }[] = [
@@ -74,6 +86,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
     loadCategories();
   }, []);
+
+  // Attach swipe listeners for mobile
+  useEffect(() => {
+    if (isMobile && isOpen && sidebarRef.current) {
+      const cleanup = attachSwipeListeners(sidebarRef.current);
+      return cleanup;
+    }
+  }, [isMobile, isOpen, attachSwipeListeners]);
 
   const handleCategoryChange = (categoryId: number, checked: boolean) => {
     if (checked) {
@@ -131,10 +151,11 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         {isMobile && onClose && (
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+            className="p-3 text-gray-400 hover:text-gray-600 active:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md touch-manipulation"
             aria-label="Close filters"
+            style={{ minHeight: '44px', minWidth: '44px' }}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -165,14 +186,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         ) : (
           <div className="space-y-2">
             {displayedCategories.map((category) => (
-              <label key={category.id} className="flex items-center">
+              <label key={category.id} className="flex items-center py-2 cursor-pointer touch-manipulation">
                 <input
                   type="checkbox"
                   checked={state.categories.includes(category.id)}
                   onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-700">{category.name}</span>
+                <span className="ml-3 text-sm text-gray-700 select-none">{category.name}</span>
               </label>
             ))}
             {categories.length > 8 && (
@@ -231,7 +252,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         {/* Common Locations */}
         <div className="space-y-2">
           {commonLocations.map((location) => (
-            <label key={location} className="flex items-center">
+            <label key={location} className="flex items-center py-2 cursor-pointer touch-manipulation">
               <input
                 type="checkbox"
                 checked={state.locations.includes(location)}
@@ -242,9 +263,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     removeLocation(location);
                   }
                 }}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">{location}</span>
+              <span className="ml-3 text-sm text-gray-700 select-none">{location}</span>
             </label>
           ))}
         </div>
@@ -255,14 +276,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         <h3 className="text-sm font-medium text-gray-900 mb-3">Experience Level</h3>
         <div className="space-y-2">
           {experienceLevels.map((level) => (
-            <label key={level.value} className="flex items-center">
+            <label key={level.value} className="flex items-center py-2 cursor-pointer touch-manipulation">
               <input
                 type="checkbox"
                 checked={state.experienceLevels.includes(level.value)}
                 onChange={(e) => handleExperienceLevelChange(level.value, e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <span className="ml-2 text-sm text-gray-700">{level.label}</span>
+              <span className="ml-3 text-sm text-gray-700 select-none">{level.label}</span>
             </label>
           ))}
         </div>
@@ -303,35 +324,35 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       <div>
         <h3 className="text-sm font-medium text-gray-900 mb-3">Work Type</h3>
         <div className="space-y-2">
-          <label className="flex items-center">
+          <label className="flex items-center py-2 cursor-pointer touch-manipulation">
             <input
               type="radio"
               name="remote"
               checked={state.isRemote === null}
               onChange={() => handleRemoteChange(null)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
-            <span className="ml-2 text-sm text-gray-700">All jobs</span>
+            <span className="ml-3 text-sm text-gray-700 select-none">All jobs</span>
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center py-2 cursor-pointer touch-manipulation">
             <input
               type="radio"
               name="remote"
               checked={state.isRemote === true}
               onChange={() => handleRemoteChange(true)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
-            <span className="ml-2 text-sm text-gray-700">Remote only</span>
+            <span className="ml-3 text-sm text-gray-700 select-none">Remote only</span>
           </label>
-          <label className="flex items-center">
+          <label className="flex items-center py-2 cursor-pointer touch-manipulation">
             <input
               type="radio"
               name="remote"
               checked={state.isRemote === false}
               onChange={() => handleRemoteChange(false)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
-            <span className="ml-2 text-sm text-gray-700">On-site only</span>
+            <span className="ml-3 text-sm text-gray-700 select-none">On-site only</span>
           </label>
         </div>
       </div>
@@ -345,8 +366,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         {isOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
-            <div className="relative flex flex-col w-full h-full max-w-xs bg-white shadow-xl">
-              <div className="flex-1 overflow-y-auto p-6">
+            <div ref={sidebarRef} className="relative flex flex-col w-full h-full max-w-sm bg-white shadow-xl">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 touch-manipulation">
                 {sidebarContent}
               </div>
             </div>

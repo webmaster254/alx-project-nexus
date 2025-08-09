@@ -38,32 +38,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
     setFormData(prev => ({ ...prev, ...updates }));
   }, []);
 
-  const handleNext = useCallback(() => {
-    switch (currentStep) {
-      case 'personal':
-        setCurrentStep('documents');
-        break;
-      case 'documents':
-        setCurrentStep('review');
-        break;
-      case 'review':
-        handleSubmit();
-        break;
-    }
-  }, [currentStep, handleSubmit]);
-
-  const handleBack = useCallback(() => {
-    switch (currentStep) {
-      case 'documents':
-        setCurrentStep('personal');
-        break;
-      case 'review':
-        setCurrentStep('documents');
-        break;
-    }
-  }, [currentStep]);
-
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!userState.isAuthenticated) {
       setSubmitError('You must be logged in to apply for jobs');
       return;
@@ -92,7 +67,32 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [userState.isAuthenticated, job.id, formData, onSuccess]);
+
+  const handleNext = useCallback(() => {
+    switch (currentStep) {
+      case 'personal':
+        setCurrentStep('documents');
+        break;
+      case 'documents':
+        setCurrentStep('review');
+        break;
+      case 'review':
+        handleSubmit();
+        break;
+    }
+  }, [currentStep, handleSubmit]);
+
+  const handleBack = useCallback(() => {
+    switch (currentStep) {
+      case 'documents':
+        setCurrentStep('personal');
+        break;
+      case 'review':
+        setCurrentStep('documents');
+        break;
+    }
+  }, [currentStep]);
 
   const getStepTitle = () => {
     switch (currentStep) {
@@ -125,10 +125,10 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
@@ -140,8 +140,9 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 active:text-gray-700 transition-colors touch-manipulation"
               aria-label="Close application form"
+              style={{ minHeight: '44px', minWidth: '44px' }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -178,7 +179,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto touch-manipulation">
           {currentStep === 'personal' && (
             <PersonalInfoStep
               job={job}

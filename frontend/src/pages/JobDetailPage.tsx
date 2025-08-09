@@ -198,7 +198,7 @@ const JobDetailPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb Navigation */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <Breadcrumb
             items={[
               { label: 'Jobs', href: '/' },
@@ -208,13 +208,13 @@ const JobDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-4xl mx-auto">
           {/* Job Header */}
-          <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-            <div className="flex items-start gap-6 mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 mb-4 sm:mb-6">
               {/* Company Logo */}
-              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 sm:w-16 sm:h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
                 {job.company.logo ? (
                   <img
                     src={job.company.logo}
@@ -288,16 +288,21 @@ const JobDetailPage: React.FC = () => {
               </div>
 
               {/* Apply Button */}
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 w-full sm:w-auto">
                 {job.can_apply ? (
                   <button 
                     onClick={handleApplyClick}
-                    className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors touch-manipulation"
+                    style={{ minHeight: '44px' }}
                   >
                     Apply Now
                   </button>
                 ) : (
-                  <button disabled className="px-6 py-3 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed">
+                  <button 
+                    disabled 
+                    className="w-full sm:w-auto px-6 py-3 bg-gray-300 text-gray-500 font-medium rounded-lg cursor-not-allowed"
+                    style={{ minHeight: '44px' }}
+                  >
                     Applications Closed
                   </button>
                 )}

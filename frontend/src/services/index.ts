@@ -1,12 +1,20 @@
 // API service layer
 import axios from 'axios';
-import type { ApiError, ApiResponse } from '../types';
+import type { ApiResponse } from '../types';
+import { 
+  createEnhancedError, 
+  retryWithBackoff, 
+  DEFAULT_RETRY_CONFIG,
+  type RetryConfig
+} from '../utils/errorHandling';
 
 // HTTP Client Configuration
 class HttpClient {
   private client: any;
+  private retryConfig: RetryConfig;
 
-  constructor() {
+  constructor(retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG) {
+    this.retryConfig = retryConfig;
     this.client = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
       timeout: 10000,
@@ -28,6 +36,9 @@ class HttpClient {
           config.headers.Authorization = `Bearer ${token}`;
         }
         
+        // Add request timestamp for debugging
+        config.metadata = { startTime: Date.now() };
+        
         // Log request in development
         if (import.meta.env.DEV) {
           console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, config.data);
@@ -37,89 +48,100 @@ class HttpClient {
       },
       (error: any) => {
         console.error('[API Request Error]', error);
-        return Promise.reject(error);
+        return Promise.reject(createEnhancedError(error));
       }
     );
 
     // Response interceptor
     this.client.interceptors.response.use(
       (response: any) => {
+        // Calculate request duration
+        const duration = Date.now() - response.config.metadata?.startTime;
+        
         // Log response in development
         if (import.meta.env.DEV) {
-          console.log(`[API Response] ${response.status} ${response.config.url}`, response.data);
+          console.log(`[API Response] ${response.status} ${response.config.url} (${duration}ms)`, response.data);
         }
         
         return response;
       },
       (error: any) => {
-        const apiError: ApiError = {
-          message: 'An error occurred',
-          status: error.response?.status || 500,
-          details: error.response?.data as Record<string, string[]>,
-        };
+        const enhancedError = createEnhancedError(error);
 
         // Handle specific error cases
         if (error.response?.status === 401) {
-          apiError.message = 'Unauthorized access';
           // Clear auth token on 401
           localStorage.removeItem('auth_token');
-        } else if (error.response?.status === 404) {
-          apiError.message = 'Resource not found';
-        } else if (error.response?.status === 500) {
-          apiError.message = 'Server error occurred';
-        } else if (error.code === 'ECONNABORTED') {
-          apiError.message = 'Request timeout';
-        } else if (!error.response) {
-          apiError.message = 'Network error';
-        } else {
-          apiError.message = error.response?.data?.message || error.message;
+          // Dispatch logout event
+          window.dispatchEvent(new CustomEvent('auth:logout'));
         }
 
-        console.error('[API Response Error]', apiError);
-        return Promise.reject(apiError);
+        console.error('[API Response Error]', enhancedError);
+        return Promise.reject(enhancedError);
       }
     );
   }
 
-  // HTTP methods
-  async get<T>(url: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
-    const response = await this.client.get(url, { params });
-    return {
-      data: response.data,
-      status: response.status,
+  // HTTP methods with retry functionality
+  async get<T>(url: string, params?: Record<string, any>, enableRetry: boolean = true): Promise<ApiResponse<T>> {
+    const makeRequest = async () => {
+      const response = await this.client.get(url, { params });
+      return {
+        data: response.data,
+        status: response.status,
+      };
     };
+
+    return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
   }
 
-  async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.post(url, data);
-    return {
-      data: response.data,
-      status: response.status,
+  async post<T>(url: string, data?: any, enableRetry: boolean = false): Promise<ApiResponse<T>> {
+    const makeRequest = async () => {
+      const response = await this.client.post(url, data);
+      return {
+        data: response.data,
+        status: response.status,
+      };
     };
+
+    // POST requests are generally not retried by default to avoid duplicate operations
+    return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
   }
 
-  async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.put(url, data);
-    return {
-      data: response.data,
-      status: response.status,
+  async put<T>(url: string, data?: any, enableRetry: boolean = false): Promise<ApiResponse<T>> {
+    const makeRequest = async () => {
+      const response = await this.client.put(url, data);
+      return {
+        data: response.data,
+        status: response.status,
+      };
     };
+
+    return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
   }
 
-  async patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
-    const response = await this.client.patch(url, data);
-    return {
-      data: response.data,
-      status: response.status,
+  async patch<T>(url: string, data?: unknown, enableRetry: boolean = false): Promise<ApiResponse<T>> {
+    const makeRequest = async () => {
+      const response = await this.client.patch(url, data);
+      return {
+        data: response.data,
+        status: response.status,
+      };
     };
+
+    return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
   }
 
-  async delete<T>(url: string): Promise<ApiResponse<T>> {
-    const response = await this.client.delete(url);
-    return {
-      data: response.data,
-      status: response.status,
+  async delete<T>(url: string, enableRetry: boolean = false): Promise<ApiResponse<T>> {
+    const makeRequest = async () => {
+      const response = await this.client.delete(url);
+      return {
+        data: response.data,
+        status: response.status,
+      };
     };
+
+    return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
   }
 
   // File upload method
@@ -175,4 +197,4 @@ export { authService, AuthService } from './authService';
 export { applicationService, ApplicationService } from './applicationService';
 
 // Export types for use in services
-export type { ApiError, ApiResponse } from '../types';
+export type { ApiResponse } from '../types';

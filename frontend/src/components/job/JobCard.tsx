@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useResponsive } from '../../hooks';
 import { Job } from '../../types';
 
 interface JobCardProps {
@@ -9,6 +10,7 @@ interface JobCardProps {
 
 const JobCard: React.FC<JobCardProps> = ({ job, onClick }) => {
   const navigate = useNavigate();
+  const { isMobile } = useResponsive();
 
   const formatSalary = (job: Job) => {
     if (job.salary_min && job.salary_max) {
@@ -49,16 +51,19 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick }) => {
 
   return (
     <div
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 cursor-pointer border border-gray-200 hover:border-blue-300"
+      className={`bg-white rounded-lg shadow-md hover:shadow-lg active:shadow-xl transition-all duration-200 cursor-pointer border border-gray-200 hover:border-blue-300 active:border-blue-400 touch-manipulation tap-highlight-none select-none ${
+        isMobile ? 'p-4' : 'p-4 sm:p-6'
+      }`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
       aria-label={`View details for ${job.title} at ${job.company.name}`}
+      style={{ minHeight: isMobile ? '120px' : '44px' }} // Larger minimum height for mobile
     >
       {/* Header with badges */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
+        <div className="flex flex-wrap gap-1 sm:gap-2">
           {job.is_new && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
               New
@@ -74,12 +79,12 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick }) => {
               Urgent
             </span>
           )}
+          {job.is_remote && (
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              Remote
+            </span>
+          )}
         </div>
-        {job.is_remote && (
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-            Remote
-          </span>
-        )}
       </div>
 
       {/* Company logo placeholder */}

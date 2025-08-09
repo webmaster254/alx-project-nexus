@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFilter } from '../../contexts/FilterContext';
+import { useResponsive } from '../../hooks';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -13,6 +14,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const { state, setSearchQuery } = useFilter();
   const [localQuery, setLocalQuery] = useState(state.searchQuery);
   const debounceRef = useRef<number | null>(null);
+  const { isMobile } = useResponsive();
 
   // Update local state when context changes (e.g., from URL params)
   useEffect(() => {
@@ -83,11 +85,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={localQuery}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+          placeholder={isMobile ? "Search jobs..." : placeholder}
+          className={`block w-full pl-10 pr-10 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 touch-manipulation ${
+            isMobile 
+              ? 'py-3 text-base' 
+              : 'py-3 sm:py-3 text-base sm:text-sm'
+          }`}
           aria-label="Search jobs"
           role="searchbox"
           aria-describedby="search-description"
+          style={{ minHeight: isMobile ? '48px' : '44px' }} // Larger touch target for mobile
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck="false"
         />
 
         {/* Clear Button */}
@@ -95,11 +106,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200"
+            className={`absolute inset-y-0 right-0 flex items-center hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200 touch-manipulation ${
+              isMobile ? 'pr-2 w-12' : 'pr-3'
+            }`}
             aria-label="Clear search"
+            style={{ minHeight: isMobile ? '48px' : '44px', minWidth: isMobile ? '48px' : '44px' }}
           >
             <svg
-              className="h-5 w-5 text-gray-400 hover:text-gray-600"
+              className={`text-gray-400 hover:text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

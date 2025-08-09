@@ -1,21 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJob } from '../contexts/JobContext';
 import { useFilter } from '../contexts/FilterContext';
-import { useUrlFilters } from '../hooks/useUrlFilters';
+import { useUrlFilters, usePullToRefresh, useResponsive, useInfiniteScroll } from '../hooks';
 import JobCard from '../components/job/JobCard';
 import JobCardSkeleton from '../components/job/JobCardSkeleton';
-import EmptyState from '../components/common/EmptyState';
+import { EmptyState } from '../components/common/EmptyState';
 import { SearchBar, FilterDrawer } from '../components/filter';
+import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
 import type { Job } from '../types';
 
 const JobListingPage: React.FC = () => {
   const navigate = useNavigate();
   const { state: jobState, fetchJobs } = useJob();
   const { state: filterState, clearFilters } = useFilter();
+  const mainRef = useRef<HTMLElement>(null);
+  const { isMobile, isTablet } = useResponsive();
   
   // Initialize URL filters synchronization
   useUrlFilters();
+
+  // Pull-to-refresh functionality for mobile
+  const handleRefresh = async () => {
+    try {
+      await fetchJobs({
+        page: 1,
+        page_size: 20,
+        search: filterState.searchQuery || undefined,
+        category: filterState.categories.length > 0 ? filterState.categories : undefined,
+        location: filterState.locations.length > 0 ? filterState.locations : undefined,
+        experience_level: filterState.experienceLevels.length > 0 ? filterState.experienceLevels : undefined,
+        is_remote: filterState.isRemote !== null ? filterState.isRemote : undefined,
+        job_type: filterState.jobTypes.length > 0 ? filterState.jobTypes : undefined,
+        salary_min: filterState.salaryRange[0] > 0 ? filterState.salaryRange[0] : undefined,
+        salary_max: filterState.salaryRange[1] < 1000000 ? filterState.salaryRange[1] : undefined,
+      });
+    } catch (err) {
+      console.error('Failed to refresh jobs:', err);
+    }
+  };
+
+  const { attachPullToRefreshListeners } = usePullToRefresh(handleRefresh, 80);
 
   const {
     jobs,
@@ -25,6 +50,14 @@ const JobListingPage: React.FC = () => {
     currentPage,
     hasNextPage
   } = jobState;
+
+  // Attach pull-to-refresh listeners
+  useEffect(() => {
+    if (mainRef.current) {
+      const cleanup = attachPullToRefreshListeners(mainRef.current);
+      return cleanup;
+    }
+  }, [attachPullToRefreshListeners]);
 
   // Load jobs when component mounts or filters change
   useEffect(() => {
@@ -84,8 +117,18 @@ const JobListingPage: React.FC = () => {
     }
   };
 
+  // Infinite scroll for mobile devices
+  const { loadMoreRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading,
+    onLoadMore: handleLoadMore,
+    threshold: isMobile ? 100 : 200, // Smaller threshold for mobile
+  });
+
   const renderSkeletons = () => {
-    return Array.from({ length: 6 }, (_, index) => (
+    // Adjust skeleton count based on screen size
+    const skeletonCount = isMobile ? 3 : isTablet ? 4 : 6;
+    return Array.from({ length: skeletonCount }, (_, index) => (
       <JobCardSkeleton key={`skeleton-${index}`} />
     ));
   };
@@ -107,8 +150,10 @@ const JobListingPage: React.FC = () => {
           <EmptyState
             title="No jobs found"
             description="We couldn't find any jobs matching your current filters. Try adjusting your search criteria or clearing some filters."
-            actionText="Clear all filters"
-            onAction={clearFilters}
+            action={{
+              label: "Clear all filters",
+              onClick: clearFilters
+            }}
             icon={
               <svg
                 className="w-16 h-16 text-gray-300"
@@ -189,57 +234,79 @@ const JobListingPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Job Opportunities
-        </h1>
-        {!isLoading && totalCount > 0 && (
-          <p className="text-gray-600">
-            {totalCount.toLocaleString()} {totalCount === 1 ? 'job' : 'jobs'} found
-          </p>
+    <main ref={mainRef} className="min-h-screen bg-gray-50">
+      <ResponsiveContainer maxWidth="7xl" padding="md" mobilePadding="sm">
+        {/* Pull-to-refresh indicator for mobile */}
+        {isMobile && (
+          <div 
+            id="pull-to-refresh-indicator" 
+            className="fixed top-16 left-1/2 transform -translate-x-1/2 z-30 opacity-0 transition-all duration-200"
+            aria-hidden="true"
+          >
+            <div className="bg-white rounded-full p-2 shadow-lg">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+          </div>
         )}
-      </div>
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <SearchBar />
-      </div>
-
-      {/* Main Content Layout */}
-      <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-        {/* Filter Sidebar - Desktop */}
-        <div className="lg:col-span-1">
-          <FilterDrawer />
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-responsive-2xl font-bold text-gray-900 mb-2">
+            Job Opportunities
+          </h1>
+          {!isLoading && totalCount > 0 && (
+            <p className="text-responsive-sm text-gray-600">
+              {totalCount.toLocaleString()} {totalCount === 1 ? 'job' : 'jobs'} found
+            </p>
+          )}
         </div>
 
-        {/* Job Listings */}
-        <div className="lg:col-span-3">
-          {/* Job Grid - Responsive: 3 columns desktop, 2 tablet, 1 mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {isLoading && jobs.length === 0 ? (
-              renderSkeletons()
-            ) : jobs.length > 0 ? (
-              jobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  onClick={() => handleJobClick(job)}
-                />
-              ))
-            ) : (
-              renderEmptyState()
-            )}
+        {/* Search Bar */}
+        <div className="mb-4 sm:mb-6">
+          <SearchBar />
+        </div>
+
+        {/* Main Content Layout */}
+        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
+          {/* Filter Sidebar - Desktop */}
+          <div className="lg:col-span-1">
+            <FilterDrawer />
           </div>
+
+          {/* Job Listings */}
+          <div className="lg:col-span-3">
+            {/* Job Grid - Enhanced Responsive Grid */}
+            <ResponsiveGrid
+              columns={{ xs: 1, sm: 2, lg: 3 }}
+              gap="md"
+              mobileGap="sm"
+              className="mb-6 sm:mb-8"
+            >
+              {isLoading && jobs.length === 0 ? (
+                renderSkeletons()
+              ) : jobs.length > 0 ? (
+                jobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onClick={() => handleJobClick(job)}
+                  />
+                ))
+              ) : (
+                renderEmptyState()
+              )}
+            </ResponsiveGrid>
 
           {/* Load More Button */}
           {hasNextPage && jobs.length > 0 && (
-            <div className="text-center">
+            <div className="text-center px-4">
               <button
                 onClick={handleLoadMore}
                 disabled={isLoading}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 touch-manipulation"
+                style={{ minHeight: '44px' }}
               >
                 {isLoading ? (
                   <>
@@ -258,13 +325,19 @@ const JobListingPage: React.FC = () => {
 
           {/* Loading more indicator */}
           {isLoading && jobs.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-6">
               {renderSkeletons()}
             </div>
           )}
+
+          {/* Infinite scroll trigger - invisible element for mobile */}
+          {hasNextPage && jobs.length > 0 && isMobile && (
+            <div ref={loadMoreRef} className="h-4 w-full" aria-hidden="true" />
+          )}
         </div>
       </div>
-    </div>
+      </ResponsiveContainer>
+    </main>
   );
 };
 

@@ -50,11 +50,12 @@ const FilterDrawer: React.FC<FilterDrawerProps> = ({ className = "" }) => {
     <>
       {/* Mobile Filter Button */}
       {isMobile && (
-        <div className="lg:hidden mb-6">
+        <div className="lg:hidden mb-4 sm:mb-6">
           <button
             onClick={() => setIsMobileFilterOpen(true)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+            className="inline-flex items-center px-4 py-3 border border-gray-300 rounded-md shadow-sm bg-white text-base sm:text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 touch-manipulation"
             aria-label="Open filters"
+            style={{ minHeight: '44px' }} // Ensure minimum touch target size
           >
             <svg
               className="w-5 h-5 mr-2 text-gray-400"

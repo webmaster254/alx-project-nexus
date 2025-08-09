@@ -133,6 +133,13 @@ export interface ApiError {
   details?: Record<string, string[]>;
 }
 
+// Enhanced API Error types
+export interface EnhancedApiError extends ApiError {
+  code?: string;
+  retryable?: boolean;
+  timestamp: number;
+}
+
 // HTTP client types
 export interface ApiResponse<T> {
   data: T;
