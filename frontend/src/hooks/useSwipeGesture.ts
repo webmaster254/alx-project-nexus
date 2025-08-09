@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 
 interface SwipeGestureOptions {
   onSwipeLeft?: () => void;

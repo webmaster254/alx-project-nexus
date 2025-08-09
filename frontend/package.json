@@ -6,14 +6,21 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "NODE_ENV=production tsc -b && vite build --mode production",
+    "build:analyze": "ANALYZE=true npm run build:prod",
+    "build:staging": "NODE_ENV=staging tsc -b && vite build --mode staging",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:prod": "vite preview --mode production",
+    "type-check": "tsc --noEmit",
+    "pre-commit": "npm run lint && npm run type-check && npm run test:run"
   },
   "dependencies": {
     "@tailwindcss/line-clamp": "^0.4.4",
@@ -30,6 +37,8 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/axios": "^0.9.36",
+    "@types/jest-axe": "^3.5.9",
+    "@types/node": "^24.2.1",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "@types/react-router-dom": "^5.3.3",
@@ -41,13 +50,18 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "jest-axe": "^10.0.0",
     "jsdom": "^26.1.0",
+    "msw": "^2.10.4",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
+    "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^4.1.11",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.0",
     "vite": "^7.1.0",
-    "vitest": "^3.2.4"
+    "vite-plugin-bundle-analyzer": "^0.0.1",
+    "vitest": "^3.2.4",
+    "web-vitals": "^5.1.0"
   }
 }

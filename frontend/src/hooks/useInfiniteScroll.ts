@@ -4,7 +4,6 @@ interface UseInfiniteScrollOptions {
   hasNextPage: boolean;
   isLoading: boolean;
   onLoadMore: () => void;
-  threshold?: number;
   rootMargin?: string;
 }
 
@@ -12,7 +11,6 @@ export const useInfiniteScroll = ({
   hasNextPage,
   isLoading,
   onLoadMore,
-  threshold = 200,
   rootMargin = '0px'
 }: UseInfiniteScrollOptions) => {
   const loadMoreRef = useRef<HTMLDivElement>(null);

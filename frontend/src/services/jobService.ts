@@ -8,9 +8,13 @@ export class JobService {
    * Fetch paginated list of jobs with optional parameters
    */
   async getJobs(params: JobListParams = {}): Promise<PaginatedResponse<Job>> {
+    // Cache job listings for 2 minutes (shorter TTL for frequently changing data)
     const response: ApiResponse<PaginatedResponse<Job>> = await httpClient.get(
       `${this.baseUrl}/`,
-      this.buildJobParams(params)
+      this.buildJobParams(params),
+      true, // enable retry
+      true, // enable cache
+      2 * 60 * 1000 // 2 minutes TTL
     );
     return response.data;
   }
@@ -19,7 +23,14 @@ export class JobService {
    * Fetch a single job by ID
    */
   async getJob(id: number): Promise<Job> {
-    const response: ApiResponse<Job> = await httpClient.get(`${this.baseUrl}/${id}/`);
+    // Cache individual job details for 5 minutes (longer TTL for less frequently changing data)
+    const response: ApiResponse<Job> = await httpClient.get(
+      `${this.baseUrl}/${id}/`,
+      undefined,
+      true, // enable retry
+      true, // enable cache
+      5 * 60 * 1000 // 5 minutes TTL
+    );
     return response.data;
   }
 
@@ -45,9 +56,13 @@ export class JobService {
    * Get featured jobs
    */
   async getFeaturedJobs(): Promise<Job[]> {
+    // Cache featured jobs for 10 minutes (longer TTL for curated content)
     const response: ApiResponse<PaginatedResponse<Job>> = await httpClient.get(
       `${this.baseUrl}/`,
-      { is_featured: true, page_size: 10 }
+      { is_featured: true, page_size: 10 },
+      true, // enable retry
+      true, // enable cache
+      10 * 60 * 1000 // 10 minutes TTL
     );
     return response.data.results;
   }
@@ -56,9 +71,13 @@ export class JobService {
    * Get recent jobs
    */
   async getRecentJobs(limit: number = 10): Promise<Job[]> {
+    // Cache recent jobs for 1 minute (short TTL for time-sensitive data)
     const response: ApiResponse<PaginatedResponse<Job>> = await httpClient.get(
       `${this.baseUrl}/`,
-      { ordering: '-created_at', page_size: limit }
+      { ordering: '-created_at', page_size: limit },
+      true, // enable retry
+      true, // enable cache
+      1 * 60 * 1000 // 1 minute TTL
     );
     return response.data.results;
   }
@@ -67,9 +86,13 @@ export class JobService {
    * Get similar jobs based on a job ID
    */
   async getSimilarJobs(jobId: number, limit: number = 5): Promise<Job[]> {
+    // Cache similar jobs for 15 minutes (longer TTL for recommendation data)
     const response: ApiResponse<PaginatedResponse<Job>> = await httpClient.get(
       `${this.baseUrl}/similar/`,
-      { job_id: jobId, page_size: limit }
+      { job_id: jobId, page_size: limit },
+      true, // enable retry
+      true, // enable cache
+      15 * 60 * 1000 // 15 minutes TTL
     );
     return response.data.results;
   }

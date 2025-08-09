@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { categoryService } from '../categoryService';
 import { httpClient } from '../index';
-import type { Category, PaginatedResponse, Job } from '../../types';
+import type { Category, PaginatedResponse } from '../../types';
 
 // Mock the httpClient
 vi.mock('../index', () => ({
@@ -20,83 +20,46 @@ describe('CategoryService', () => {
   const mockCategory: Category = {
     id: 1,
     name: 'Engineering',
-    description: 'Engineering jobs',
-    parent_id: undefined,
-    children: [],
+    description: 'Software engineering and development roles',
   };
 
-  const mockPaginatedCategoryResponse: PaginatedResponse<Category> = {
+  const mockPaginatedResponse: PaginatedResponse<Category> = {
     count: 1,
     next: undefined,
     previous: undefined,
     results: [mockCategory],
   };
 
-  const mockJob: Job = {
-    id: 1,
-    title: 'Software Engineer',
-    description: 'Job description',
-    summary: 'Job summary',
-    location: 'New York',
-    is_remote: false,
-    salary_min: 80000,
-    salary_max: 120000,
-    salary_type: 'yearly',
-    salary_currency: 'USD',
-    experience_level: 'mid',
-    required_skills: 'JavaScript, React',
-    preferred_skills: 'TypeScript',
-    application_deadline: '2024-12-31',
-    external_url: undefined,
-    is_active: true,
-    is_featured: false,
-    views_count: 100,
-    applications_count: 5,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
-    company: {
-      id: 1,
-      name: 'Tech Corp',
-      description: 'A tech company',
-      website: 'https://techcorp.com',
-      logo: 'logo.png',
-      size: '100-500',
-      industry: 'Technology',
-      location: 'New York',
-    },
-    industry: {
-      id: 1,
-      name: 'Technology',
-      description: 'Tech industry',
-    },
-    job_type: {
-      id: 1,
-      name: 'Full-time',
-      description: 'Full-time position',
-    },
-    categories: [mockCategory],
-    salary_display: '$80,000 - $120,000',
-    days_since_posted: '1 day ago',
-    is_new: true,
-    is_urgent: false,
-    can_apply: true,
-  };
-
-  const mockPaginatedJobResponse: PaginatedResponse<Job> = {
-    count: 1,
-    next: undefined,
-    previous: undefined,
-    results: [mockJob],
-  };
-
   describe('getCategories', () => {
     it('should fetch all categories', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedCategoryResponse, status: 200 });
+      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedResponse, status: 200 });
 
       const result = await categoryService.getCategories();
 
       expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/');
       expect(result).toEqual([mockCategory]);
+    });
+
+    it('should handle empty categories response', async () => {
+      const emptyResponse: PaginatedResponse<Category> = {
+        count: 0,
+        next: undefined,
+        previous: undefined,
+        results: [],
+      };
+
+      mockHttpClient.get.mockResolvedValue({ data: emptyResponse, status: 200 });
+
+      const result = await categoryService.getCategories();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle API errors', async () => {
+      const error = new Error('Network error');
+      mockHttpClient.get.mockRejectedValue(error);
+
+      await expect(categoryService.getCategories()).rejects.toThrow('Network error');
     });
   });
 
@@ -109,127 +72,110 @@ describe('CategoryService', () => {
       expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/1/');
       expect(result).toEqual(mockCategory);
     });
+
+    it('should handle category not found', async () => {
+      const error = new Error('Category not found');
+      mockHttpClient.get.mockRejectedValue(error);
+
+      await expect(categoryService.getCategory(999)).rejects.toThrow('Category not found');
+    });
   });
 
   describe('getCategoryJobs', () => {
-    it('should fetch jobs for a category with default parameters', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedJobResponse, status: 200 });
+    it('should fetch jobs for a specific category', async () => {
+      const mockJobsResponse = {
+        count: 2,
+        next: null,
+        previous: null,
+        results: [
+          { id: 1, title: 'Software Engineer', category: mockCategory },
+          { id: 2, title: 'Frontend Developer', category: mockCategory },
+        ],
+      };
+
+      mockHttpClient.get.mockResolvedValue({ data: mockJobsResponse, status: 200 });
 
       const result = await categoryService.getCategoryJobs(1);
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/1/jobs/', {
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/', {
+        category: '1',
+      });
+      expect(result).toEqual(mockJobsResponse);
+    });
+
+    it('should fetch jobs with pagination parameters', async () => {
+      const mockJobsResponse = {
+        count: 10,
+        next: 'http://api.example.com/jobs/?page=2',
+        previous: null,
+        results: [],
+      };
+
+      mockHttpClient.get.mockResolvedValue({ data: mockJobsResponse, status: 200 });
+
+      const result = await categoryService.getCategoryJobs(1, { page: 1, page_size: 5 });
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/jobs/', {
+        category: '1',
         page: 1,
-        page_size: 20,
+        page_size: 5,
       });
-      expect(result).toEqual(mockPaginatedJobResponse);
-    });
-
-    it('should fetch jobs for a category with custom parameters', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedJobResponse, status: 200 });
-
-      const result = await categoryService.getCategoryJobs(1, 2, 10);
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/1/jobs/', {
-        page: 2,
-        page_size: 10,
-      });
-      expect(result).toEqual(mockPaginatedJobResponse);
+      expect(result).toEqual(mockJobsResponse);
     });
   });
 
-  describe('getCategoriesWithJobCounts', () => {
-    it('should fetch categories with job counts', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedCategoryResponse, status: 200 });
+  describe('getPopularCategories', () => {
+    it('should fetch popular categories with job counts', async () => {
+      const mockPopularCategories = [
+        { ...mockCategory, job_count: 150 },
+        { id: 2, name: 'Design', description: 'UI/UX and graphic design', job_count: 75 },
+      ];
 
-      const result = await categoryService.getCategoriesWithJobCounts();
+      mockHttpClient.get.mockResolvedValue({ data: mockPopularCategories, status: 200 });
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/', {
-        include_job_count: true,
-      });
-      expect(result).toEqual([mockCategory]);
+      const result = await categoryService.getPopularCategories();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/popular/');
+      expect(result).toEqual(mockPopularCategories);
     });
-  });
 
-  describe('getTopLevelCategories', () => {
-    it('should fetch top-level categories', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedCategoryResponse, status: 200 });
+    it('should fetch popular categories with custom limit', async () => {
+      const mockPopularCategories = [mockCategory];
 
-      const result = await categoryService.getTopLevelCategories();
+      mockHttpClient.get.mockResolvedValue({ data: mockPopularCategories, status: 200 });
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/', {
-        parent_id__isnull: true,
+      const result = await categoryService.getPopularCategories(5);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/popular/', {
+        limit: 5,
       });
-      expect(result).toEqual([mockCategory]);
-    });
-  });
-
-  describe('getSubcategories', () => {
-    it('should fetch subcategories for a parent category', async () => {
-      const subcategory: Category = {
-        id: 2,
-        name: 'Frontend',
-        description: 'Frontend engineering',
-        parent_id: 1,
-      };
-      const subcategoryResponse: PaginatedResponse<Category> = {
-        count: 1,
-        next: undefined,
-        previous: undefined,
-        results: [subcategory],
-      };
-
-      mockHttpClient.get.mockResolvedValue({ data: subcategoryResponse, status: 200 });
-
-      const result = await categoryService.getSubcategories(1);
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/', {
-        parent_id: 1,
-      });
-      expect(result).toEqual([subcategory]);
+      expect(result).toEqual(mockPopularCategories);
     });
   });
 
   describe('searchCategories', () => {
-    it('should search categories by name', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: mockPaginatedCategoryResponse, status: 200 });
+    it('should search categories by query', async () => {
+      const searchResults = [
+        { id: 1, name: 'Software Engineering', description: 'Software development roles' },
+        { id: 2, name: 'Engineering Management', description: 'Engineering leadership roles' },
+      ];
+
+      mockHttpClient.get.mockResolvedValue({ data: { results: searchResults }, status: 200 });
 
       const result = await categoryService.searchCategories('engineering');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/', {
         search: 'engineering',
       });
-      expect(result).toEqual([mockCategory]);
+      expect(result).toEqual(searchResults);
     });
-  });
 
-  describe('getCategoryHierarchy', () => {
-    it('should fetch category hierarchy with children', async () => {
-      const categoryWithChildren: Category = {
-        ...mockCategory,
-        children: [
-          {
-            id: 2,
-            name: 'Frontend',
-            description: 'Frontend engineering',
-            parent_id: 1,
-          },
-        ],
-      };
-      const hierarchyResponse: PaginatedResponse<Category> = {
-        count: 1,
-        next: undefined,
-        previous: undefined,
-        results: [categoryWithChildren],
-      };
+    it('should handle empty search results', async () => {
+      mockHttpClient.get.mockResolvedValue({ data: { results: [] }, status: 200 });
 
-      mockHttpClient.get.mockResolvedValue({ data: hierarchyResponse, status: 200 });
+      const result = await categoryService.searchCategories('nonexistent');
 
-      const result = await categoryService.getCategoryHierarchy();
-
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/categories/', {
-        include_children: true,
-      });
-      expect(result).toEqual([categoryWithChildren]);
+      expect(result).toEqual([]);
     });
   });
 });

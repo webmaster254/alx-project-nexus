@@ -58,7 +58,7 @@ export interface UpdateProfileRequest {
 }
 
 class AuthService {
-  private refreshTokenTimeout: number | null = null;
+  private refreshTokenTimeout: NodeJS.Timeout | null = null;
 
   /**
    * Login user with email and password

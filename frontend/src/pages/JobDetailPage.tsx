@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useJob } from '../contexts/JobContext';
 import { jobService } from '../services/jobService';
 import { Job } from '../types';
-import { Breadcrumb } from '../components/common';
-import { ApplicationForm } from '../components/application';
+import { Breadcrumb, LoadingSpinner } from '../components/common';
+
+// Lazy load the ApplicationForm component
+const ApplicationForm = React.lazy(() => import('../components/application/ApplicationForm'));
 
 
 const JobDetailPage: React.FC = () => {
@@ -460,11 +462,20 @@ const JobDetailPage: React.FC = () => {
 
       {/* Application Form Modal */}
       {showApplicationForm && job && (
-        <ApplicationForm
-          job={job}
-          onClose={handleCloseApplicationForm}
-          onSuccess={handleApplicationSuccess}
-        />
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8">
+              <LoadingSpinner size="lg" />
+              <p className="mt-4 text-gray-600">Loading application form...</p>
+            </div>
+          </div>
+        }>
+          <ApplicationForm
+            job={job}
+            onClose={handleCloseApplicationForm}
+            onSuccess={handleApplicationSuccess}
+          />
+        </Suspense>
       )}
     </div>
   );

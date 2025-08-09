@@ -16,7 +16,7 @@ const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   padding = 'md',
   mobilePadding = 'sm'
 }) => {
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   const getMaxWidthClass = () => {
     const maxWidthMap = {

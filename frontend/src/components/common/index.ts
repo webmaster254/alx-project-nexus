@@ -19,3 +19,5 @@ export {
 } from './EmptyState';
 export { OfflineIndicator, OfflineBanner } from './OfflineIndicator';
 export { default as ResponsiveButton } from './ResponsiveButton';
+export { default as LazyImage } from './LazyImage';
+export { default as PerformanceMonitor } from './PerformanceMonitor';

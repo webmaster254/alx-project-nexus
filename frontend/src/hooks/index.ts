@@ -1,7 +1,7 @@
 // Custom React hooks
 export { useUrlFilters } from './useUrlFilters';
 export { useOnlineStatus } from './useOnlineStatus';
-export { useSwipeGesture, usePullToRefresh } from './useSwipeGesture';
+export { useSwipeGesture } from './useSwipeGesture';
 export { 
   useResponsive, 
   useBreakpoint, 
@@ -13,3 +13,5 @@ export {
   useInfiniteScroll, 
   usePullToRefreshWithFeedback 
 } from './useInfiniteScroll';
+export { usePerformanceTracking } from './usePerformanceTracking';
+export { usePullToRefresh } from './usePullToRefresh';

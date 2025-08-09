@@ -4,7 +4,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { useUser } from '../contexts/UserContext';
 
-export const AuthPage: React.FC = () => {
+const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const { state } = useUser();
   const location = useLocation();
@@ -58,3 +58,5 @@ export const AuthPage: React.FC = () => {
     </div>
   );
 };
+
+export default AuthPage;

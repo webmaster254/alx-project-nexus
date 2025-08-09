@@ -1,21 +1,41 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJob } from '../contexts/JobContext';
 import { useFilter } from '../contexts/FilterContext';
-import { useUrlFilters, usePullToRefresh, useResponsive, useInfiniteScroll } from '../hooks';
+import { useBookmark } from '../contexts/BookmarkContext';
+import { useUrlFilters, usePullToRefresh, useResponsive, useInfiniteScroll, usePerformanceTracking } from '../hooks';
 import JobCard from '../components/job/JobCard';
 import JobCardSkeleton from '../components/job/JobCardSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
-import { SearchBar, FilterDrawer } from '../components/filter';
+import { SearchBar, FilterDrawer, SortDropdown } from '../components/filter';
 import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
-import type { Job } from '../types';
+import { recommendationService } from '../services/recommendationService';
+import type { Job, JobRecommendation, SortOption } from '../types';
 
 const JobListingPage: React.FC = () => {
   const navigate = useNavigate();
   const { state: jobState, fetchJobs } = useJob();
   const { state: filterState, clearFilters } = useFilter();
+  const { loadBookmarkedJobs } = useBookmark();
+  const [sortBy, setSortBy] = useState<string>('-created_at');
+  const [recommendations, setRecommendations] = useState<JobRecommendation[]>([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const { isMobile, isTablet } = useResponsive();
+  
+  // Performance tracking
+  const { trackInteraction, trackApiCall } = usePerformanceTracking('job-listing');
+
+  // Sort options
+  const sortOptions: SortOption[] = [
+    { value: '-created_at', label: 'Most Recent', description: 'Newest jobs first' },
+    { value: 'created_at', label: 'Oldest First', description: 'Oldest jobs first' },
+    { value: '-applications_count', label: 'Most Popular', description: 'Most applied jobs first' },
+    { value: 'title', label: 'Job Title A-Z', description: 'Alphabetical by title' },
+    { value: '-title', label: 'Job Title Z-A', description: 'Reverse alphabetical by title' },
+    { value: '-salary_max', label: 'Highest Salary', description: 'Highest paying jobs first' },
+    { value: 'salary_min', label: 'Lowest Salary', description: 'Lowest paying jobs first' },
+  ];
   
   // Initialize URL filters synchronization
   useUrlFilters();
@@ -59,9 +79,34 @@ const JobListingPage: React.FC = () => {
     }
   }, [attachPullToRefreshListeners]);
 
-  // Load jobs when component mounts or filters change
+  // Load bookmarked jobs on mount
+  useEffect(() => {
+    loadBookmarkedJobs();
+  }, [loadBookmarkedJobs]);
+
+  // Load recommendations when no filters are active
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      if (!filterState.isActive && !filterState.searchQuery) {
+        try {
+          const personalizedRecs = await recommendationService.getPersonalizedRecommendations({ limit: 5 });
+          setRecommendations(personalizedRecs);
+          setShowRecommendations(personalizedRecs.length > 0);
+        } catch (error) {
+          console.warn('Failed to load recommendations:', error);
+        }
+      } else {
+        setShowRecommendations(false);
+      }
+    };
+
+    loadRecommendations();
+  }, [filterState.isActive, filterState.searchQuery]);
+
+  // Load jobs when component mounts or filters/sorting change
   useEffect(() => {
     const loadJobs = async () => {
+      const startTime = performance.now();
       try {
         await fetchJobs({
           page: 1,
@@ -74,9 +119,12 @@ const JobListingPage: React.FC = () => {
           job_type: filterState.jobTypes.length > 0 ? filterState.jobTypes : undefined,
           salary_min: filterState.salaryRange[0] > 0 ? filterState.salaryRange[0] : undefined,
           salary_max: filterState.salaryRange[1] < 1000000 ? filterState.salaryRange[1] : undefined,
+          ordering: sortBy,
         });
+        trackApiCall('jobs-fetch', startTime);
       } catch (err) {
         console.error('Failed to load jobs:', err);
+        trackApiCall('jobs-fetch-error', startTime);
       }
     };
 
@@ -89,10 +137,13 @@ const JobListingPage: React.FC = () => {
     filterState.isRemote,
     filterState.jobTypes,
     filterState.salaryRange,
-    fetchJobs
+    sortBy,
+    fetchJobs,
+    trackApiCall
   ]);
 
   const handleJobClick = (job: Job) => {
+    trackInteraction('job-click');
     navigate(`/jobs/${job.id}`);
   };
 
@@ -122,7 +173,6 @@ const JobListingPage: React.FC = () => {
     hasNextPage,
     isLoading,
     onLoadMore: handleLoadMore,
-    threshold: isMobile ? 100 : 200, // Smaller threshold for mobile
   });
 
   const renderSkeletons = () => {
@@ -268,6 +318,41 @@ const JobListingPage: React.FC = () => {
           <SearchBar />
         </div>
 
+        {/* Recommendations Section */}
+        {showRecommendations && recommendations.length > 0 && (
+          <div className="mb-6 sm:mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 sm:p-6 border border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Recommended for You
+                </h2>
+                <button
+                  onClick={() => setShowRecommendations(false)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                  aria-label="Hide recommendations"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recommendations.slice(0, 3).map((rec) => (
+                  <JobCard
+                    key={`rec-${rec.job.id}`}
+                    job={rec.job}
+                    onClick={() => handleJobClick(rec.job)}
+                    showActions={false}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content Layout */}
         <div className="lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Filter Sidebar - Desktop */}
@@ -277,6 +362,27 @@ const JobListingPage: React.FC = () => {
 
           {/* Job Listings */}
           <div className="lg:col-span-3">
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+              <div className="flex items-center text-sm text-gray-600">
+                {!isLoading && jobs.length > 0 && (
+                  <span>
+                    Showing {jobs.length} of {totalCount.toLocaleString()} jobs
+                  </span>
+                )}
+              </div>
+              
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 hidden sm:inline">Sort by:</span>
+                <SortDropdown
+                  options={sortOptions}
+                  value={sortBy}
+                  onChange={setSortBy}
+                  className="w-full sm:w-48"
+                />
+              </div>
+            </div>
             {/* Job Grid - Enhanced Responsive Grid */}
             <ResponsiveGrid
               columns={{ xs: 1, sm: 2, lg: 3 }}

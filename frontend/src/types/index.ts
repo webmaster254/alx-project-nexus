@@ -63,6 +63,7 @@ export interface Job {
   is_new: boolean;
   is_urgent: boolean;
   can_apply: boolean;
+  is_bookmarked?: boolean;
 }
 
 export interface Application {
@@ -105,6 +106,9 @@ export interface JobListParams {
   job_type?: number[];
   search?: string;
   ordering?: string;
+  company?: string;
+  skills?: string[];
+  posted_within?: 'day' | 'week' | 'month' | 'all';
 }
 
 export interface FilterParams {
@@ -114,6 +118,41 @@ export interface FilterParams {
   salary_range?: [number, number];
   job_types?: number[];
   is_remote?: boolean;
+  company?: string;
+  skills?: string[];
+  posted_within?: 'day' | 'week' | 'month' | 'all';
+}
+
+export interface SearchSuggestion {
+  id: string;
+  text: string;
+  type: 'job_title' | 'company' | 'skill' | 'location';
+  count?: number;
+}
+
+export interface BookmarkState {
+  bookmarkedJobs: number[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface SortOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+export interface RecommendationReason {
+  type: 'skill_match' | 'location_match' | 'experience_match' | 'company_match' | 'category_match';
+  score: number;
+  description: string;
+}
+
+export interface JobRecommendation {
+  job: Job;
+  score: number;
+  reasons: RecommendationReason[];
+  created_at: string;
 }
 
 export interface ApplicationData {

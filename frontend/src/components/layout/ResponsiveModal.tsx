@@ -22,7 +22,7 @@ const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
   closeOnBackdrop = true,
   className = ''
 }) => {
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   // Swipe gesture for mobile modal dismissal
   const { attachSwipeListeners } = useSwipeGesture({

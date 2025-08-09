@@ -23,9 +23,7 @@ GRANT CREATE ON SCHEMA public TO job_board_user;
 -- These are here as documentation of the expected indexes
 
 -- Performance optimization settings
-ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
 ALTER SYSTEM SET track_activity_query_size = 2048;
-ALTER SYSTEM SET pg_stat_statements.track = 'all';
 
 -- Connection pooling settings
 ALTER SYSTEM SET max_connections = 200;

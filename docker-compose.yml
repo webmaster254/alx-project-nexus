@@ -35,7 +35,7 @@ services:
       context: .
       target: development
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - .:/app
       - static_volume:/var/www/static
@@ -43,6 +43,7 @@ services:
       - logs_volume:/var/log/django
     environment:
       - DEBUG=True
+      - DOCKER_ENV=development
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-job_board}
       - REDIS_URL=redis://redis:6379/1
     depends_on:

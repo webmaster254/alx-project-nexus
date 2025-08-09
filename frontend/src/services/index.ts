@@ -7,6 +7,7 @@ import {
   DEFAULT_RETRY_CONFIG,
   type RetryConfig
 } from '../utils/errorHandling';
+import { cacheService } from './cacheService';
 
 // HTTP Client Configuration
 class HttpClient {
@@ -82,14 +83,44 @@ class HttpClient {
     );
   }
 
-  // HTTP methods with retry functionality
-  async get<T>(url: string, params?: Record<string, any>, enableRetry: boolean = true): Promise<ApiResponse<T>> {
+  // HTTP methods with retry functionality and caching
+  async get<T>(
+    url: string, 
+    params?: Record<string, any>, 
+    enableRetry: boolean = true,
+    enableCache: boolean = true,
+    cacheTtl?: number
+  ): Promise<ApiResponse<T>> {
+    // Generate cache key
+    const cacheKey = cacheService.generateKey(url, params);
+    
+    // Check cache first if enabled
+    if (enableCache) {
+      const cachedData = cacheService.get<ApiResponse<T>>(cacheKey);
+      if (cachedData) {
+        if (import.meta.env.DEV) {
+          console.log(`[Cache Hit] ${url}`, cachedData);
+        }
+        return cachedData;
+      }
+    }
+
     const makeRequest = async () => {
       const response = await this.client.get(url, { params });
-      return {
+      const apiResponse = {
         data: response.data,
         status: response.status,
       };
+
+      // Cache the response if enabled
+      if (enableCache) {
+        cacheService.set(cacheKey, apiResponse, cacheTtl);
+        if (import.meta.env.DEV) {
+          console.log(`[Cache Set] ${url}`, apiResponse);
+        }
+      }
+
+      return apiResponse;
     };
 
     return enableRetry ? retryWithBackoff(makeRequest, this.retryConfig) : makeRequest();
@@ -185,6 +216,26 @@ class HttpClient {
       status: response.status,
     };
   }
+
+  // Cache management methods
+  invalidateCache(pattern?: string): void {
+    if (pattern) {
+      // Invalidate cache entries matching pattern
+      const stats = cacheService.getStats();
+      stats.keys.forEach(key => {
+        if (key.includes(pattern)) {
+          cacheService.delete(key);
+        }
+      });
+    } else {
+      // Clear all cache
+      cacheService.clear();
+    }
+  }
+
+  getCacheStats() {
+    return cacheService.getStats();
+  }
 }
 
 // Create and export HTTP client instance
@@ -195,6 +246,12 @@ export { jobService, JobService } from './jobService';
 export { categoryService, CategoryService } from './categoryService';
 export { authService, AuthService } from './authService';
 export { applicationService, ApplicationService } from './applicationService';
+export { bookmarkService, BookmarkService } from './bookmarkService';
+export { shareService, ShareService } from './shareService';
+export { searchService, SearchService } from './searchService';
+export { recommendationService, RecommendationService } from './recommendationService';
+export { default as cacheService } from './cacheService';
+export { default as performanceService } from './performanceService';
 
 // Export types for use in services
 export type { ApiResponse } from '../types';

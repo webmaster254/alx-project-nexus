@@ -6,8 +6,17 @@ from .base import *
 
 DEBUG = True
 
-# Database - inherit from base.py (uses DATABASE_URL if available)
-# The database configuration is already set in base.py
+# Override database configuration for development
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('DB_NAME', default='job_board'),
+        'USER': config('DB_USER', default='postgres'),
+        'PASSWORD': config('DB_PASSWORD', default='password'),
+        'HOST': 'db',
+        'PORT': '5432',
+    }
+}
 
 # Add debug toolbar for development
 # INSTALLED_APPS += [

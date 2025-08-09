@@ -2,7 +2,7 @@ import React from 'react';
 import { UserProfile } from '../components/auth/UserProfile';
 import { useUser } from '../contexts/UserContext';
 
-export const ProfilePage: React.FC = () => {
+const ProfilePage: React.FC = () => {
   const { state, logout } = useUser();
 
   const handleLogout = async () => {
@@ -46,3 +46,5 @@ export const ProfilePage: React.FC = () => {
     </div>
   );
 };
+
+export default ProfilePage;
