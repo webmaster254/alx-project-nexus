@@ -26,3 +26,5 @@ services:
         value: true
       - key: DEBUG
         value: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://alx-project-nexus-git-main-joseph-macharias-projects.vercel.app,https://alx-project-nexus.vercel.app"
