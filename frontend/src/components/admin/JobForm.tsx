@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Plus, Minus, AlertCircle, CheckCircle } from 'lucide-react';
-import { adminService, companyService, categoryService } from '../../services';
+import { companyService, categoryService } from '../../services';
 import type { AdminJobData, AdminJob } from '../../services/adminService';
 import type { Company } from '../../services/companyService';
 import type { Industry, JobType } from '../../services/categoryService';
@@ -168,7 +168,7 @@ const JobForm: React.FC<JobFormProps> = ({ job, onSubmit, onCancel }) => {
     index: number,
     value: string
   ) => {
-    const newArray = [...formData[field]];
+    const newArray = [...(formData[field] || [])];
     newArray[index] = value;
     setFormData(prev => ({ ...prev, [field]: newArray }));
   };
@@ -184,8 +184,8 @@ const JobForm: React.FC<JobFormProps> = ({ job, onSubmit, onCancel }) => {
     field: 'requirements' | 'responsibilities' | 'benefits' | 'skills_required',
     index: number
   ) => {
-    if (formData[field].length > 1) {
-      const newArray = formData[field].filter((_, i) => i !== index);
+    if (formData[field] && formData[field]!.length > 1) {
+      const newArray = formData[field]!.filter((_, i) => i !== index);
       setFormData(prev => ({ ...prev, [field]: newArray }));
     }
   };

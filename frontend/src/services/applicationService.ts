@@ -35,6 +35,7 @@ export interface Application {
     salary_min?: number;
     salary_max?: number;
     salary_currency: string;
+    application_deadline?: string;
   };
   user: {
     id: number;
@@ -183,8 +184,8 @@ export class ApplicationService {
       
       return {
         count: filteredApps.length,
-        next: page * pageSize < filteredApps.length ? `page=${page + 1}` : null,
-        previous: page > 1 ? `page=${page - 1}` : null,
+        next: page * pageSize < filteredApps.length ? `page=${page + 1}` : undefined,
+        previous: page > 1 ? `page=${page - 1}` : undefined,
         results: paginatedApps
       };
     }

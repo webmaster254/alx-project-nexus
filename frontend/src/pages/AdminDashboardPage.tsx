@@ -2,22 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { 
   Briefcase, 
   Building, 
-  Users, 
   FileText, 
   Plus, 
   Search, 
   Filter,
-  MoreVertical,
   Edit,
   Trash2,
   Eye,
-  CheckCircle,
   XCircle,
   AlertCircle,
   TrendingUp
 } from 'lucide-react';
 import { adminService, applicationService, companyService, categoryService } from '../services';
-import type { AdminJob, AdminCompany, Application } from '../services/adminService';
+import type { AdminJob, AdminCompany } from '../services/adminService';
 import type { Industry, JobType } from '../services/categoryService';
 import JobForm from '../components/admin/JobForm';
 
@@ -51,7 +48,7 @@ const AdminDashboardPage: React.FC = () => {
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
   
   // Pagination and filters
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
@@ -100,7 +97,10 @@ const AdminDashboardPage: React.FC = () => {
             page: currentPage,
             page_size: 20
           });
-          setCompanies(companiesData.results);
+          setCompanies(companiesData.results.map(company => ({
+            ...company,
+            jobs_count: company.jobs_count || 0
+          })));
           break;
           
         case 'applications':
@@ -125,10 +125,10 @@ const AdminDashboardPage: React.FC = () => {
               });
               setApplications(applicationsData.results);
               console.log(`Loaded ${applicationsData.results.length} applications`);
-            } catch (allError) {
+            } catch (allError: any) {
               console.error('Failed to load applications:', allError);
               // Show a meaningful error message for timeout issues
-              if (allError.code === 'TIMEOUT' || allError.status === 408) {
+              if (allError?.code === 'TIMEOUT' || allError?.status === 408) {
                 setError('Applications are taking too long to load. This usually happens when there are many applications in the system. Try refreshing or contact your system administrator.');
               } else {
                 setError('Unable to load applications. The applications endpoint may be experiencing issues.');

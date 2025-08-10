@@ -9,7 +9,7 @@ import JobCardSkeleton from '../components/job/JobCardSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { SearchBar, FilterDrawer, SortDropdown } from '../components/filter';
 import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
-import { recommendationService } from '../services/recommendationService';
+// import { recommendationService } from '../services/recommendationService';
 import { jobService } from '../services/jobService';
 import type { Job, JobRecommendation, SortOption } from '../types';
 

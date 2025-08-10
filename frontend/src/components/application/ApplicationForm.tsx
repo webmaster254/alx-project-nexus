@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Job, ApplicationData } from '../../types';
+import { Job } from '../../types';
 import { applicationService } from '../../services';
-import type { CreateApplicationData, Document } from '../../services/applicationService';
+import type { CreateApplicationData } from '../../services/applicationService';
 import { useUser } from '../../contexts/UserContext';
 import PersonalInfoStep from './PersonalInfoStep';
 import DocumentsStep from './DocumentsStep';

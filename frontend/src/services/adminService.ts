@@ -419,8 +419,8 @@ export class AdminService {
         featured_jobs: featuredJobsResponse.status === 'fulfilled' ? featuredJobsResponse.value.count : 0,
         total_companies: companiesResponse.status === 'fulfilled' ? companiesResponse.value.count : 0,
         verified_companies: verifiedCompaniesResponse.status === 'fulfilled' ? verifiedCompaniesResponse.value.count : 0,
-        total_applications: applicationsResponse.status === 'fulfilled' ? applicationsResponse.value.count : 0,
-        pending_applications: pendingApplicationsResponse.status === 'fulfilled' ? pendingApplicationsResponse.value.count : 0,
+        total_applications: applicationsResponse.status === 'fulfilled' ? (applicationsResponse.value.data as any)?.count || 0 : 0,
+        pending_applications: pendingApplicationsResponse.status === 'fulfilled' ? (pendingApplicationsResponse.value.data as any)?.count || 0 : 0,
         total_users: 0, // Would need user endpoint
         active_users: 0, // Would need user endpoint
         jobs_this_month: 0, // Would need date filtering
@@ -473,7 +473,7 @@ export class AdminService {
       }
 
       if (recentApplications.status === 'fulfilled') {
-        recentApplications.value.data.results.forEach((app: any) => {
+        ((recentApplications.value.data as any)?.results || []).forEach((app: any) => {
           activities.push({
             type: 'application_submitted',
             title: `New application for ${app.job.title}`,

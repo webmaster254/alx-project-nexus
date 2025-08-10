@@ -367,7 +367,8 @@ export class CompanyService {
       
       const locations = companies.results
         .map(company => company.location)
-        .filter((location, index, arr) => location && arr.indexOf(location) === index)
+        .filter((location): location is string => location !== undefined && location !== null)
+        .filter((location, index, arr) => arr.indexOf(location) === index)
         .sort();
       
       return locations;
