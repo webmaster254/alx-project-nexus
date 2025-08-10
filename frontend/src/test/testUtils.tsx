@@ -137,7 +137,7 @@ export const createMockCompany = (overrides = {}) => ({
 });
 
 // Mock API responses
-export const createMockPaginatedResponse = <T>(items: T[], overrides = {}) => ({
+export const createMockPaginatedResponse = <T,>(items: T[], overrides = {}) => ({
   count: items.length,
   next: null,
   previous: null,
