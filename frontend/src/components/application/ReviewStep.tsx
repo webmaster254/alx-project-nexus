@@ -44,8 +44,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   };
 
   return (
-    <div className="p-6">
-      <div className="space-y-6">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="space-y-6">
         <div className="text-sm text-gray-600">
           <p>Please review your application details before submitting. Once submitted, you cannot make changes.</p>
         </div>
@@ -186,10 +187,12 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             </div>
           </div>
         )}
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row justify-between gap-3 pt-6 mt-6 border-t border-gray-200">
+      {/* Actions - Fixed at bottom */}
+      <div className="flex-shrink-0 px-6 py-4 bg-gray-50 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row justify-between gap-3">
         <button
           onClick={onBack}
           disabled={isSubmitting}
@@ -216,6 +219,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             'Submit Application'
           )}
         </button>
+        </div>
       </div>
     </div>
   );

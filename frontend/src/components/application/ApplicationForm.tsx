@@ -155,9 +155,9 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
@@ -208,7 +208,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ job, onClose, onSucce
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto touch-manipulation">
+        <div className="flex-1 overflow-y-auto touch-manipulation min-h-0">
           {currentStep === 'personal' && (
             <PersonalInfoStep
               job={job}
