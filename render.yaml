@@ -19,7 +19,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: ALLOWED_HOSTS
-        value: "jobboard.onrender.com,*.onrender.com"
+        value: "jobboard-qump.onrender.com,*.onrender.com,localhost,127.0.0.1"
       - key: WEB_CONCURRENCY
         value: 4
       - key: USE_WHITENOISE
