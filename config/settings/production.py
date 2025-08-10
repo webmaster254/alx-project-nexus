@@ -13,12 +13,14 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Environment validation
 REQUIRED_ENV_VARS = [
     'SECRET_KEY',
-    'DB_NAME',
-    'DB_USER', 
-    'DB_PASSWORD',
-    'DB_HOST',
     'ALLOWED_HOSTS',
 ]
+
+# Database URL is optional if individual DB vars are provided
+DATABASE_URL = config('DATABASE_URL', default=None)
+if not DATABASE_URL:
+    # If no DATABASE_URL, require individual DB variables
+    REQUIRED_ENV_VARS.extend(['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST'])
 
 # Validate required environment variables
 missing_vars = []
@@ -104,8 +106,6 @@ RATELIMIT_ENABLE = True
 RATELIMIT_USE_CACHE = 'default'
 
 # Database configuration with connection pooling for production
-DATABASE_URL = config('DATABASE_URL', default=None)
-
 if DATABASE_URL:
     # Use DATABASE_URL if provided (recommended for cloud deployments)
     import dj_database_url
