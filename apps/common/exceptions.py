@@ -181,10 +181,12 @@ def custom_exception_handler(exc, context):
             )
         
         elif isinstance(exc, MethodNotAllowed):
-            allowed_methods = getattr(exc, 'detail', {}).get('allowed_methods', [])
+            # Get allowed methods from the exception's available_methods attribute
+            allowed_methods = getattr(exc, 'available_methods', [])
+            methods_str = ", ".join(allowed_methods) if allowed_methods else "Unknown"
             custom_response_data = format_error_response(
                 error_code='METHOD_NOT_ALLOWED',
-                message=f'Method not allowed. Allowed methods: {", ".join(allowed_methods)}',
+                message=f'Method not allowed. Allowed methods: {methods_str}',
                 status_code=response.status_code
             )
         

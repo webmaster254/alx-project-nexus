@@ -12,3 +12,128 @@ Traceback (most recent call last):
   File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
     raise DisallowedHost(msg)
 django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:17:37,301", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:17:37,336", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:17:37,360", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:17:37,384", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:17:37,407", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'jobboard-qump.onrender.com'. You may need to add 'jobboard-qump.onrender.com' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:20:20,872", "type": "SECURITY", "level": "ERROR", "message": "Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS."}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+                                 ^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: 'testserver'. You may need to add 'testserver' to ALLOWED_HOSTS.
+{"timestamp": "2025-08-10 23:33:35,268", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:33:35,272", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:34:09,395", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:34:09,397", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:34:58,758", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:34:59,093", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:35:38,691", "type": "SECURITY", "level": "ERROR", "message": "Internal Server Error: /api/auth/register/"}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 173, in http_method_not_allowed
+    raise exceptions.MethodNotAllowed(request.method)
+rest_framework.exceptions.MethodNotAllowed: Method "GET" not allowed.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 472, in handle_exception
+    response = exception_handler(exc, context)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/apps/common/exceptions.py", line 184, in custom_exception_handler
+    allowed_methods = getattr(exc, 'detail', {}).get('allowed_methods', [])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ErrorDetail' object has no attribute 'get'
+{"timestamp": "2025-08-10 23:36:44,021", "type": "SECURITY", "level": "ERROR", "message": "Service Unavailable: /api/health/"}

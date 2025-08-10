@@ -1,0 +1,68 @@
+{"timestamp": "2025-08-10 23:33:35,260", "level": "ERROR", "module": "exceptions", "process": 185707, "thread": 139810402357312, "message": "API Exception: ModuleNotFoundError - No module named 'redis' - Path: /api/health/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:33:35,260", "level": "ERROR", "module": "exceptions", "process": 185707, "thread": 139810402357312, "message": "Unhandled exception: ModuleNotFoundError - No module named 'redis'"}
+{"timestamp": "2025-08-10 23:33:35,268", "level": "ERROR", "module": "log", "process": 185707, "thread": 139810402357312, "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:33:35,271", "level": "ERROR", "module": "exceptions", "process": 185707, "thread": 139810402357312, "message": "API Exception: ModuleNotFoundError - No module named 'redis' - Path: /api/auth/register/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:33:35,271", "level": "ERROR", "module": "exceptions", "process": 185707, "thread": 139810402357312, "message": "Unhandled exception: ModuleNotFoundError - No module named 'redis'"}
+{"timestamp": "2025-08-10 23:33:35,272", "level": "ERROR", "module": "log", "process": 185707, "thread": 139810402357312, "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:34:09,394", "level": "ERROR", "module": "exceptions", "process": 185913, "thread": 140369679183936, "message": "API Exception: ModuleNotFoundError - No module named 'redis' - Path: /api/health/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:34:09,394", "level": "ERROR", "module": "exceptions", "process": 185913, "thread": 140369679183936, "message": "Unhandled exception: ModuleNotFoundError - No module named 'redis'"}
+{"timestamp": "2025-08-10 23:34:09,395", "level": "ERROR", "module": "log", "process": 185913, "thread": 140369679183936, "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:34:09,397", "level": "ERROR", "module": "exceptions", "process": 185913, "thread": 140369679183936, "message": "API Exception: ModuleNotFoundError - No module named 'redis' - Path: /api/auth/register/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:34:09,397", "level": "ERROR", "module": "exceptions", "process": 185913, "thread": 140369679183936, "message": "Unhandled exception: ModuleNotFoundError - No module named 'redis'"}
+{"timestamp": "2025-08-10 23:34:09,397", "level": "ERROR", "module": "log", "process": 185913, "thread": 140369679183936, "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:34:58,757", "level": "ERROR", "module": "exceptions", "process": 186156, "thread": 140450756624448, "message": "API Exception: ProgrammingError - relation "cache_table" does not exist
+LINE 1: SELECT "cache_key", "value", "expires" FROM "cache_table" WH...
+                                                    ^
+ - Path: /api/health/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:34:58,757", "level": "ERROR", "module": "exceptions", "process": 186156, "thread": 140450756624448, "message": "Unhandled exception: ProgrammingError - relation "cache_table" does not exist
+LINE 1: SELECT "cache_key", "value", "expires" FROM "cache_table" WH...
+                                                    ^
+"}
+{"timestamp": "2025-08-10 23:34:58,758", "level": "ERROR", "module": "log", "process": 186156, "thread": 140450756624448, "message": "Internal Server Error: /api/health/"}
+{"timestamp": "2025-08-10 23:34:59,091", "level": "ERROR", "module": "exceptions", "process": 186156, "thread": 140450756624448, "message": "API Exception: ProgrammingError - relation "cache_table" does not exist
+LINE 1: SELECT "cache_key", "value", "expires" FROM "cache_table" WH...
+                                                    ^
+ - Path: /api/auth/register/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:34:59,091", "level": "ERROR", "module": "exceptions", "process": 186156, "thread": 140450756624448, "message": "Unhandled exception: ProgrammingError - relation "cache_table" does not exist
+LINE 1: SELECT "cache_key", "value", "expires" FROM "cache_table" WH...
+                                                    ^
+"}
+{"timestamp": "2025-08-10 23:34:59,093", "level": "ERROR", "module": "log", "process": 186156, "thread": 140450756624448, "message": "Internal Server Error: /api/auth/register/"}
+{"timestamp": "2025-08-10 23:35:38,621", "level": "ERROR", "module": "exceptions", "process": 186394, "thread": 139995079352384, "message": "API Exception: MethodNotAllowed - Method "GET" not allowed. - Path: /api/auth/register/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:35:38,691", "level": "ERROR", "module": "log", "process": 186394, "thread": 139995079352384, "message": "Internal Server Error: /api/auth/register/"}
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 173, in http_method_not_allowed
+    raise exceptions.MethodNotAllowed(request.method)
+rest_framework.exceptions.MethodNotAllowed: Method "GET" not allowed.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/views/decorators/csrf.py", line 56, in wrapper_view
+    return view_func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/django/views/generic/base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/venv/lib/python3.11/site-packages/rest_framework/views.py", line 472, in handle_exception
+    response = exception_handler(exc, context)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/pythonista/Downloads/alx/alx-project-nexus/apps/common/exceptions.py", line 184, in custom_exception_handler
+    allowed_methods = getattr(exc, 'detail', {}).get('allowed_methods', [])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ErrorDetail' object has no attribute 'get'
+{"timestamp": "2025-08-10 23:36:44,021", "level": "ERROR", "module": "log", "process": 186848, "thread": 140387706937408, "message": "Service Unavailable: /api/health/"}
+{"timestamp": "2025-08-10 23:36:44,029", "level": "ERROR", "module": "exceptions", "process": 186848, "thread": 140387706937408, "message": "API Exception: MethodNotAllowed - Method "GET" not allowed. - Path: /api/auth/register/ - Method: GET - User: Anonymous"}
+{"timestamp": "2025-08-10 23:37:53,970", "level": "ERROR", "module": "exceptions", "process": 187272, "thread": 140066563989568, "message": "API Exception: MethodNotAllowed - Method "GET" not allowed. - Path: /api/auth/register/ - Method: GET - User: Anonymous"}

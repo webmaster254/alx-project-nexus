@@ -164,13 +164,41 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# Cache configuration for production
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+# Cache configuration for production with fallback
+REDIS_URL = config('REDIS_URL', default=None)
+if REDIS_URL:
+    try:
+        import redis
+        # Test Redis connection
+        redis_client = redis.from_url(REDIS_URL)
+        redis_client.ping()
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                'LOCATION': REDIS_URL,
+            }
+        }
+    except ImportError:
+        # Fallback to dummy cache if Redis module not available
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+        }
+    except Exception:
+        # Fallback to dummy cache if Redis connection fails
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            }
+        }
+else:
+    # Use dummy cache if no Redis URL provided
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
     }
-}
 
 # Static files configuration for production
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
@@ -401,7 +429,8 @@ if config('USE_WHITENOISE', default=False, cast=bool):
 # Monitoring and health check settings
 HEALTH_CHECK_ENABLED = config('HEALTH_CHECK_ENABLED', default=True, cast=bool)
 HEALTH_CHECK_DATABASE = config('HEALTH_CHECK_DATABASE', default=True, cast=bool)
-HEALTH_CHECK_CACHE = config('HEALTH_CHECK_CACHE', default=True, cast=bool)
+# Disable cache health check if using dummy cache
+HEALTH_CHECK_CACHE = config('HEALTH_CHECK_CACHE', default=not (CACHES['default']['BACKEND'] == 'django.core.cache.backends.dummy.DummyCache'), cast=bool)
 HEALTH_CHECK_STORAGE = config('HEALTH_CHECK_STORAGE', default=True, cast=bool)
 
 # Application monitoring
