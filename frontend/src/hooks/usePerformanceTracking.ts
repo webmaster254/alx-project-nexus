@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { config } from '../config/environment';
 import { trackEvent } from '../services/performanceService';
 
@@ -55,7 +55,7 @@ export const usePerformanceTracking = (componentName: string) => {
 
 // Hook for tracking user interactions
 export const useInteractionTracking = () => {
-  const trackClick = (elementName: string, additionalData?: Record<string, any>) => {
+  const trackClick = useCallback((elementName: string, additionalData?: Record<string, any>) => {
     if (!config.enableAnalytics) return;
     
     trackEvent('click', 'User Interaction', elementName);
@@ -63,15 +63,15 @@ export const useInteractionTracking = () => {
     if (config.enableDebugMode) {
       console.log(`User clicked: ${elementName}`, additionalData);
     }
-  };
+  }, []);
 
-  const trackFormSubmit = (formName: string, success: boolean) => {
+  const trackFormSubmit = useCallback((formName: string, success: boolean) => {
     if (!config.enableAnalytics) return;
     
     trackEvent('form_submit', 'User Interaction', `${formName}_${success ? 'success' : 'error'}`);
-  };
+  }, []);
 
-  const trackSearch = (query: string, resultsCount: number) => {
+  const trackSearch = useCallback((query: string, resultsCount: number) => {
     if (!config.enableAnalytics) return;
     
     trackEvent('search', 'User Interaction', 'search_query', resultsCount);
@@ -80,13 +80,13 @@ export const useInteractionTracking = () => {
     if (resultsCount === 0) {
       trackEvent('search_no_results', 'User Interaction', query);
     }
-  };
+  }, []);
 
-  const trackPageView = (pageName: string) => {
+  const trackPageView = useCallback((pageName: string) => {
     if (!config.enableAnalytics) return;
     
     trackEvent('page_view', 'Navigation', pageName);
-  };
+  }, []);
 
   return {
     trackClick,
@@ -98,7 +98,7 @@ export const useInteractionTracking = () => {
 
 // Hook for tracking API performance
 export const useApiPerformanceTracking = () => {
-  const trackApiCall = async <T>(
+  const trackApiCall = useCallback(async <T>(
     apiName: string,
     apiCall: () => Promise<T>
   ): Promise<T> => {
@@ -133,7 +133,7 @@ export const useApiPerformanceTracking = () => {
       
       throw error;
     }
-  };
+  }, []);
 
   return { trackApiCall };
 };

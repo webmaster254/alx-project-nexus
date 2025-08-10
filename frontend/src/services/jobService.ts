@@ -2,7 +2,7 @@ import { httpClient } from './index';
 import type { Job, PaginatedResponse, JobListParams, FilterParams, ApiResponse } from '../types';
 
 export class JobService {
-  private readonly baseUrl = '/jobs';
+  private readonly baseUrl = '/jobs/jobs';
 
   /**
    * Fetch paginated list of jobs with optional parameters

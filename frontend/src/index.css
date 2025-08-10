@@ -1,6 +1,53 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Enhanced responsive breakpoints */
+  --breakpoint-xs: 475px;
+
+  /* Touch-friendly spacing */
+  --spacing-18: 4.5rem;
+  --spacing-88: 22rem;
+
+  /* Enhanced font sizes for mobile readability */
+  --font-size-xs: 0.75rem;
+  --font-size-xs--line-height: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-sm--line-height: 1.25rem;
+  --font-size-base: 1rem;
+  --font-size-base--line-height: 1.5rem;
+  --font-size-lg: 1.125rem;
+  --font-size-lg--line-height: 1.75rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xl--line-height: 1.75rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-2xl--line-height: 2rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-3xl--line-height: 2.25rem;
+
+  /* Touch-friendly minimum heights */
+  --size-44: 44px;
+  --size-48: 48px;
+
+  /* Animation keyframes */
+  --animate-bounce-subtle: bounce-subtle 0.3s ease-in-out;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-up: slide-up 0.3s ease-out;
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
 
 /* Enhanced responsive design utilities */
 @layer base {

@@ -101,6 +101,10 @@ const JobDetailPage: React.FC = () => {
     // For now, just close the form - the success step will handle this
   };
 
+  // Handle both list and detail API response formats
+  const companyName = job?.company?.name || (job as any)?.company_name || 'Unknown Company';
+  const companyLogo = job?.company?.logo || (job as any)?.company_logo;
+
   if (isLoadingJob) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -217,15 +221,15 @@ const JobDetailPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 mb-4 sm:mb-6">
               {/* Company Logo */}
               <div className="w-16 h-16 sm:w-16 sm:h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
-                {job.company.logo ? (
+                {companyLogo ? (
                   <img
-                    src={job.company.logo}
-                    alt={`${job.company.name} logo`}
+                    src={companyLogo}
+                    alt={`${companyName} logo`}
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
                   <span className="text-gray-500 text-xl font-medium">
-                    {job.company.name.charAt(0).toUpperCase()}
+                    {companyName.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
@@ -238,7 +242,7 @@ const JobDetailPage: React.FC = () => {
 
                 {/* Company Name */}
                 <p className="text-xl text-gray-600 mb-4">
-                  {job.company.name}
+                  {companyName}
                 </p>
 
                 {/* Badges */}
@@ -394,12 +398,12 @@ const JobDetailPage: React.FC = () => {
 
               {/* Company Information */}
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">About {job.company.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">About {companyName}</h3>
                 <div className="space-y-4">
-                  {job.company.description && (
+                  {job.company?.description && (
                     <p className="text-sm text-gray-700">{job.company.description}</p>
                   )}
-                  {job.company.website && (
+                  {job.company?.website && (
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Website</dt>
                       <dd className="mt-1">
@@ -414,13 +418,13 @@ const JobDetailPage: React.FC = () => {
                       </dd>
                     </div>
                   )}
-                  {job.company.size && (
+                  {job.company?.size && (
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Company Size</dt>
                       <dd className="mt-1 text-sm text-gray-900">{job.company.size}</dd>
                     </div>
                   )}
-                  {job.company.location && (
+                  {job.company?.location && (
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Company Location</dt>
                       <dd className="mt-1 text-sm text-gray-900">{job.company.location}</dd>
@@ -444,7 +448,7 @@ const JobDetailPage: React.FC = () => {
                             {similarJob.title}
                           </button>
                         </h4>
-                        <p className="text-sm text-gray-600 mb-2">{similarJob.company.name}</p>
+                        <p className="text-sm text-gray-600 mb-2">{similarJob.company?.name || (similarJob as any).company_name || 'Unknown Company'}</p>
                         <div className="flex items-center text-xs text-gray-500">
                           <span>{similarJob.location}</span>
                           <span className="mx-2">•</span>

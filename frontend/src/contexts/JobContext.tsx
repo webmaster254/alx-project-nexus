@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import type { JobState, JobAction, Job, PaginatedResponse, JobListParams } from '../types';
 import { jobService } from '../services/jobService';
 
@@ -136,16 +136,16 @@ interface JobProviderProps {
 export function JobProvider({ children }: JobProviderProps) {
   const [state, dispatch] = useReducer(jobReducer, initialJobState);
 
-  // Helper functions
-  const setLoading = (loading: boolean) => {
+  // Helper functions - memoized to prevent re-creation
+  const setLoading = useCallback((loading: boolean) => {
     dispatch({ type: 'SET_LOADING', payload: loading });
-  };
+  }, []);
 
-  const setError = (error: string | null) => {
+  const setError = useCallback((error: string | null) => {
     dispatch({ type: 'SET_ERROR', payload: error });
-  };
+  }, []);
 
-  const setJobs = (response: PaginatedResponse<Job>, page: number = 1) => {
+  const setJobs = useCallback((response: PaginatedResponse<Job>, page: number = 1) => {
     dispatch({
       type: 'SET_JOBS',
       payload: {
@@ -156,75 +156,84 @@ export function JobProvider({ children }: JobProviderProps) {
         hasPreviousPage: !!response.previous,
       },
     });
-  };
+  }, []);
 
-  const setCurrentJob = (job: Job | null) => {
+  const setCurrentJob = useCallback((job: Job | null) => {
     dispatch({ type: 'SET_CURRENT_JOB', payload: job });
-  };
+  }, []);
 
-  const setFeaturedJobs = (jobs: Job[]) => {
+  const setFeaturedJobs = useCallback((jobs: Job[]) => {
     dispatch({ type: 'SET_FEATURED_JOBS', payload: jobs });
-  };
+  }, []);
 
-  const setRecentJobs = (jobs: Job[]) => {
+  const setRecentJobs = useCallback((jobs: Job[]) => {
     dispatch({ type: 'SET_RECENT_JOBS', payload: jobs });
-  };
+  }, []);
 
-  const setSimilarJobs = (jobs: Job[]) => {
+  const setSimilarJobs = useCallback((jobs: Job[]) => {
     dispatch({ type: 'SET_SIMILAR_JOBS', payload: jobs });
-  };
+  }, []);
 
-  const appendJobs = (jobs: Job[]) => {
+  const appendJobs = useCallback((jobs: Job[]) => {
     dispatch({ type: 'APPEND_JOBS', payload: jobs });
-  };
+  }, []);
 
-  const clearJobs = () => {
+  const clearJobs = useCallback(() => {
     dispatch({ type: 'CLEAR_JOBS' });
-  };
+  }, []);
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     dispatch({ type: 'RESET_STATE' });
-  };
+  }, []);
 
-  // API actions
-  const fetchJobs = async (params: JobListParams, append: boolean = false) => {
+  // API actions - memoized to prevent infinite re-renders
+  const fetchJobs = useCallback(async (params: JobListParams, append: boolean = false) => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const response = await jobService.getJobs(params);
       
       if (append) {
-        appendJobs(response.results);
+        dispatch({ type: 'APPEND_JOBS', payload: response.results });
       } else {
-        setJobs(response, params.page || 1);
+        dispatch({
+          type: 'SET_JOBS',
+          payload: {
+            jobs: response.results,
+            totalCount: response.count,
+            currentPage: params.page || 1,
+            hasNextPage: !!response.next,
+            hasPreviousPage: !!response.previous,
+          },
+        });
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch jobs');
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to fetch jobs' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const fetchJob = async (id: number) => {
+  const fetchJob = useCallback(async (id: number) => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', payload: true });
       const job = await jobService.getJob(id);
-      setCurrentJob(job);
+      dispatch({ type: 'SET_CURRENT_JOB', payload: job });
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to fetch job details');
+      dispatch({ type: 'SET_ERROR', payload: error instanceof Error ? error.message : 'Failed to fetch job details' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
-  };
+  }, []);
 
-  const fetchSimilarJobs = async (jobId: number) => {
+  const fetchSimilarJobs = useCallback(async (jobId: number) => {
     try {
       const similarJobs = await jobService.getSimilarJobs(jobId);
-      setSimilarJobs(similarJobs);
+      dispatch({ type: 'SET_SIMILAR_JOBS', payload: similarJobs });
     } catch (error) {
       // Don't set global error for similar jobs failure
       console.warn('Failed to fetch similar jobs:', error);
     }
-  };
+  }, []);
 
   const value: JobContextType = {
     state,

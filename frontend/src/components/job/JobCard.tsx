@@ -18,6 +18,10 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
   const [isBookmarking, setIsBookmarking] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
+  // Handle both list and detail API response formats
+  const companyName = job.company?.name || (job as any).company_name || 'Unknown Company';
+  const companyLogo = job.company?.logo || (job as any).company_logo;
+
   const formatSalary = (job: Job) => {
     if (job.salary_min && job.salary_max) {
       return `${job.salary_currency}${job.salary_min.toLocaleString()} - ${job.salary_currency}${job.salary_max.toLocaleString()} ${job.salary_type}`;
@@ -110,7 +114,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
-      aria-label={`View details for ${job.title} at ${job.company.name}`}
+      aria-label={`View details for ${job.title} at ${companyName}`}
       style={{ minHeight: isMobile ? '120px' : '44px' }} // Larger minimum height for mobile
     >
       {/* Header with badges and actions */}
@@ -231,15 +235,15 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
       {/* Company logo placeholder */}
       <div className="flex items-start gap-4 mb-4">
         <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-          {job.company.logo ? (
+          {companyLogo ? (
             <img
-              src={job.company.logo}
-              alt={`${job.company.name} logo`}
+              src={companyLogo}
+              alt={`${companyName} logo`}
               className="w-full h-full object-cover rounded-lg"
             />
           ) : (
             <span className="text-gray-500 text-sm font-medium">
-              {job.company.name.charAt(0).toUpperCase()}
+              {companyName.charAt(0).toUpperCase()}
             </span>
           )}
         </div>
@@ -252,7 +256,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
           
           {/* Company name */}
           <p className="text-sm text-gray-600 mb-2">
-            {job.company.name}
+            {companyName}
           </p>
         </div>
       </div>
@@ -281,17 +285,17 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
           {getExperienceLevelDisplay(job.experience_level)}
         </span>
-        {job.categories.slice(0, 2).map((category) => (
+        {job.categories?.slice(0, 2).map((category) => (
           <span
             key={category.id}
             className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
           >
             {category.name}
           </span>
-        ))}
-        {job.categories.length > 2 && (
+        )) || []}
+        {(job.categories?.length || 0) > 2 && (
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-            +{job.categories.length - 2} more
+            +{(job.categories?.length || 0) - 2} more
           </span>
         )}
       </div>

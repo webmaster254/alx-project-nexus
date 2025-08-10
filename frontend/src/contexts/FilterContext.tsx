@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import type { FilterState, FilterAction, ExperienceLevel } from '../types';
 
 // Initial state
@@ -136,84 +136,84 @@ interface FilterProviderProps {
 export function FilterProvider({ children }: FilterProviderProps) {
   const [state, dispatch] = useReducer(filterReducer, initialFilterState);
 
-  // Helper functions
-  const setSearchQuery = (query: string) => {
+  // Helper functions - memoized to prevent re-creation
+  const setSearchQuery = useCallback((query: string) => {
     dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
-  };
+  }, []);
 
-  const setCategories = (categories: number[]) => {
+  const setCategories = useCallback((categories: number[]) => {
     dispatch({ type: 'SET_CATEGORIES', payload: categories });
-  };
+  }, []);
 
-  const addCategory = (categoryId: number) => {
+  const addCategory = useCallback((categoryId: number) => {
     if (!state.categories.includes(categoryId)) {
       dispatch({ type: 'SET_CATEGORIES', payload: [...state.categories, categoryId] });
     }
-  };
+  }, [state.categories]);
 
-  const removeCategory = (categoryId: number) => {
+  const removeCategory = useCallback((categoryId: number) => {
     dispatch({ type: 'SET_CATEGORIES', payload: state.categories.filter(id => id !== categoryId) });
-  };
+  }, [state.categories]);
 
-  const setLocations = (locations: string[]) => {
+  const setLocations = useCallback((locations: string[]) => {
     dispatch({ type: 'SET_LOCATIONS', payload: locations });
-  };
+  }, []);
 
-  const addLocation = (location: string) => {
+  const addLocation = useCallback((location: string) => {
     if (!state.locations.includes(location)) {
       dispatch({ type: 'SET_LOCATIONS', payload: [...state.locations, location] });
     }
-  };
+  }, [state.locations]);
 
-  const removeLocation = (location: string) => {
+  const removeLocation = useCallback((location: string) => {
     dispatch({ type: 'SET_LOCATIONS', payload: state.locations.filter(loc => loc !== location) });
-  };
+  }, [state.locations]);
 
-  const setExperienceLevels = (levels: ExperienceLevel[]) => {
+  const setExperienceLevels = useCallback((levels: ExperienceLevel[]) => {
     dispatch({ type: 'SET_EXPERIENCE_LEVELS', payload: levels });
-  };
+  }, []);
 
-  const addExperienceLevel = (level: ExperienceLevel) => {
+  const addExperienceLevel = useCallback((level: ExperienceLevel) => {
     if (!state.experienceLevels.includes(level)) {
       dispatch({ type: 'SET_EXPERIENCE_LEVELS', payload: [...state.experienceLevels, level] });
     }
-  };
+  }, [state.experienceLevels]);
 
-  const removeExperienceLevel = (level: ExperienceLevel) => {
+  const removeExperienceLevel = useCallback((level: ExperienceLevel) => {
     dispatch({ type: 'SET_EXPERIENCE_LEVELS', payload: state.experienceLevels.filter(l => l !== level) });
-  };
+  }, [state.experienceLevels]);
 
-  const setSalaryRange = (range: [number, number]) => {
+  const setSalaryRange = useCallback((range: [number, number]) => {
     dispatch({ type: 'SET_SALARY_RANGE', payload: range });
-  };
+  }, []);
 
-  const setJobTypes = (types: number[]) => {
+  const setJobTypes = useCallback((types: number[]) => {
     dispatch({ type: 'SET_JOB_TYPES', payload: types });
-  };
+  }, []);
 
-  const addJobType = (typeId: number) => {
+  const addJobType = useCallback((typeId: number) => {
     if (!state.jobTypes.includes(typeId)) {
       dispatch({ type: 'SET_JOB_TYPES', payload: [...state.jobTypes, typeId] });
     }
-  };
+  }, [state.jobTypes]);
 
-  const removeJobType = (typeId: number) => {
+  const removeJobType = useCallback((typeId: number) => {
     dispatch({ type: 'SET_JOB_TYPES', payload: state.jobTypes.filter(id => id !== typeId) });
-  };
+  }, [state.jobTypes]);
 
-  const setIsRemote = (isRemote: boolean | null) => {
+  const setIsRemote = useCallback((isRemote: boolean | null) => {
     dispatch({ type: 'SET_IS_REMOTE', payload: isRemote });
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     dispatch({ type: 'CLEAR_FILTERS' });
-  };
+  }, []);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     dispatch({ type: 'RESET_FILTERS' });
-  };
+  }, []);
 
-  const getActiveFiltersCount = (): number => {
+  const getActiveFiltersCount = useCallback((): number => {
     let count = 0;
     if ((state.searchQuery || '').length > 0) count++;
     if ((state.categories || []).length > 0) count++;
@@ -223,11 +223,11 @@ export function FilterProvider({ children }: FilterProviderProps) {
     if ((state.jobTypes || []).length > 0) count++;
     if (state.isRemote !== null) count++;
     return count;
-  };
+  }, [state.searchQuery, state.categories, state.locations, state.experienceLevels, state.salaryRange, state.jobTypes, state.isRemote]);
 
-  const hasActiveFiltersFunc = (): boolean => {
+  const hasActiveFiltersFunc = useCallback((): boolean => {
     return hasActiveFilters(state);
-  };
+  }, [state]);
 
   const value: FilterContextType = {
     state,
