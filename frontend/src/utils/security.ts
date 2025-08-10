@@ -57,7 +57,7 @@ export const securityHeaders = {
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
-  ...(config.isProduction && {
+  ...(config.environment === 'production' && {
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload'
   }),
   ...(config.enableCSP && {

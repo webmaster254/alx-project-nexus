@@ -6,11 +6,8 @@ import { UserProvider } from '../contexts/UserContext';
 import { FilterProvider } from '../contexts/FilterContext';
 import { JobProvider } from '../contexts/JobContext';
 import { BookmarkProvider } from '../contexts/BookmarkContext';
-import { axe } from 'jest-axe';
-import { count } from 'console';
-import { T } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
-import { count } from 'console';
-import { T } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
+// Accessibility testing
+export { axe } from 'jest-axe';
 
 // Custom render function that includes all providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {

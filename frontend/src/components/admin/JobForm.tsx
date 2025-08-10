@@ -176,7 +176,7 @@ const JobForm: React.FC<JobFormProps> = ({ job, onSubmit, onCancel }) => {
   const addArrayField = (field: 'requirements' | 'responsibilities' | 'benefits' | 'skills_required') => {
     setFormData(prev => ({
       ...prev,
-      [field]: [...prev[field], '']
+      [field]: [...(prev[field] || []), '']
     }));
   };
 

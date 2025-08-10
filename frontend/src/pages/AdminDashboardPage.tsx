@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { adminService, applicationService, companyService, categoryService } from '../services';
 import type { AdminJob, AdminCompany } from '../services/adminService';
+import type { Application } from '../services/applicationService';
 import type { Industry, JobType } from '../services/categoryService';
 import JobForm from '../components/admin/JobForm';
 

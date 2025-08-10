@@ -130,8 +130,8 @@ class PerformanceMonitor {
     if (!config.enableAnalytics) return;
 
     // Send to Google Analytics if configured
-    if (config.googleAnalyticsId && typeof gtag !== 'undefined') {
-      gtag('event', 'web_vitals', {
+    if (config.googleAnalyticsId && typeof (window as any).gtag !== 'undefined') {
+      (window as any).gtag('event', 'web_vitals', {
         event_category: 'Performance',
         event_label: metric.name,
         value: Math.round(metric.value),
