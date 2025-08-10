@@ -210,28 +210,28 @@ LOGGING = {
             'style': '{',
         },
         'json': {
-            'format': '{"timestamp": "{asctime}", "level": "{levelname}", "module": "{module}", "process": {process}, "thread": {thread}, "message": "{message}"}',
+            'format': '{{"timestamp": "{asctime}", "level": "{levelname}", "module": "{module}", "process": {process}, "thread": {thread}, "message": "{message}"}}',
             'style': '{',
         } if ENABLE_STRUCTURED_LOGGING else {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
         'audit': {
-            'format': '{"timestamp": "{asctime}", "type": "AUDIT", "message": "{message}"}',
+            'format': '{{"timestamp": "{asctime}", "type": "AUDIT", "message": "{message}"}}',
             'style': '{',
         } if ENABLE_STRUCTURED_LOGGING else {
             'format': '{asctime} AUDIT {message}',
             'style': '{',
         },
         'security': {
-            'format': '{"timestamp": "{asctime}", "type": "SECURITY", "level": "{levelname}", "message": "{message}"}',
+            'format': '{{"timestamp": "{asctime}", "type": "SECURITY", "level": "{levelname}", "message": "{message}"}}',
             'style': '{',
         } if ENABLE_STRUCTURED_LOGGING else {
             'format': '{asctime} SECURITY {levelname} {message}',
             'style': '{',
         },
         'performance': {
-            'format': '{"timestamp": "{asctime}", "type": "PERFORMANCE", "message": "{message}"}',
+            'format': '{{"timestamp": "{asctime}", "type": "PERFORMANCE", "message": "{message}"}}',
             'style': '{',
         } if ENABLE_STRUCTURED_LOGGING else {
             'format': '{asctime} PERFORMANCE {message}',
