@@ -68,7 +68,10 @@ const Header: React.FC = () => {
   };
 
   const navigation = [
-    { name: 'Jobs', href: '/', current: location.pathname === '/' },
+    { name: 'Home', href: '/', current: location.pathname === '/' },
+    { name: 'Jobs', href: '/jobs', current: location.pathname === '/jobs' },
+    { name: 'About', href: '/about', current: location.pathname === '/about' },
+    { name: 'Contact', href: '/contact', current: location.pathname === '/contact' },
     ...(userState.isAuthenticated 
       ? [{ name: 'Profile', href: '/profile', current: location.pathname === '/profile' }]
       : []

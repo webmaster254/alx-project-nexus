@@ -1,5 +1,6 @@
 // Common reusable components
 export { default as Header } from './Header';
+export { default as Footer } from './Footer';
 export { default as Breadcrumb } from './Breadcrumb';
 export type { BreadcrumbItem } from './Breadcrumb';
 export { default as BottomNavigation } from './BottomNavigation';

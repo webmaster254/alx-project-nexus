@@ -10,6 +10,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { SearchBar, FilterDrawer, SortDropdown } from '../components/filter';
 import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
 import { recommendationService } from '../services/recommendationService';
+import { jobService } from '../services/jobService';
 import type { Job, JobRecommendation, SortOption } from '../types';
 
 const JobListingPage: React.FC = () => {
@@ -90,9 +91,25 @@ const JobListingPage: React.FC = () => {
     const loadRecommendations = async () => {
       if (!filterState.isActive && !filterState.searchQuery) {
         try {
-          const personalizedRecs = await recommendationService.getPersonalizedRecommendations({ limit: 5 });
-          setRecommendations(personalizedRecs);
-          setShowRecommendations(personalizedRecs.length > 0);
+          // Use featured jobs instead of personalized recommendations since that API is not available
+          const featuredJobs = await jobService.getFeaturedJobs();
+          
+          // Convert featured jobs to recommendation format for compatibility
+          const featuredRecommendations: JobRecommendation[] = featuredJobs.slice(0, 5).map(job => ({
+            job,
+            score: 0.9, // High score for featured jobs
+            reasons: [
+              {
+                type: 'category_match' as const,
+                score: 0.9,
+                description: 'Featured opportunity from top companies'
+              }
+            ],
+            created_at: new Date().toISOString()
+          }));
+          
+          setRecommendations(featuredRecommendations);
+          setShowRecommendations(featuredRecommendations.length > 0);
         } catch (error) {
           console.warn('Failed to load recommendations:', error);
         }
