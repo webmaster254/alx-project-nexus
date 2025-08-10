@@ -3,7 +3,7 @@ URL configuration for common app.
 """
 
 from django.urls import path
-from . import health
+from . import health, views
 
 app_name = 'common'
 
@@ -13,4 +13,8 @@ urlpatterns = [
     path('health/live/', health.liveness_probe, name='liveness_probe'),
     path('health/ready/', health.readiness_probe, name='readiness_probe'),
     path('metrics/', health.metrics, name='metrics'),
+    
+    # Debug endpoints (remove after debugging)
+    path('debug/', views.debug_info, name='debug_info'),
+    path('test-register/', views.test_auth_register, name='test_auth_register'),
 ]
