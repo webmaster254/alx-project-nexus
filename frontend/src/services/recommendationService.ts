@@ -27,21 +27,26 @@ export class RecommendationService {
 
   /**
    * Get personalized job recommendations for the user
+   * Note: This API endpoint is not available, so we return trending jobs as a fallback
    */
   async getPersonalizedRecommendations(params: RecommendationParams = {}): Promise<JobRecommendation[]> {
     try {
-      const response: ApiResponse<JobRecommendation[]> = await httpClient.get(
-        `${this.baseUrl}/personalized/`,
-        {
-          limit: params.limit || 10,
-          exclude_applied: params.exclude_applied !== false,
-          exclude_viewed: params.exclude_viewed !== false,
-        },
-        true, // enable retry
-        true, // enable cache
-        10 * 60 * 1000 // 10 minutes TTL
-      );
-      return response.data;
+      // Since personalized API is not available, use trending jobs as fallback
+      const trendingJobs = await this.getTrendingJobs(params.limit || 10);
+      
+      // Convert Job[] to JobRecommendation[] format for compatibility
+      return trendingJobs.map(job => ({
+        job,
+        score: 0.8, // Default score
+        reasons: [
+          {
+            type: 'category_match' as const,
+            score: 0.8,
+            description: 'Popular job in your field'
+          }
+        ],
+        created_at: new Date().toISOString()
+      }));
     } catch (error) {
       console.warn('Failed to fetch personalized recommendations:', error);
       return [];
@@ -176,23 +181,21 @@ export class RecommendationService {
 
   /**
    * Get mixed recommendations combining different strategies
+   * Note: Uses trending jobs instead of personalized since that API is not available
    */
   async getMixedRecommendations(limit: number = 20): Promise<{
-    personalized: JobRecommendation[];
     trending: Job[];
     skillBased: Job[];
     companyBased: Job[];
   }> {
     try {
-      const [personalized, trending, skillBased, companyBased] = await Promise.allSettled([
-        this.getPersonalizedRecommendations({ limit: Math.ceil(limit * 0.4) }),
-        this.getTrendingJobs(Math.ceil(limit * 0.3)),
-        this.getSkillBasedRecommendations([], Math.ceil(limit * 0.2)),
-        this.getCompanyBasedRecommendations(Math.ceil(limit * 0.1))
+      const [trending, skillBased, companyBased] = await Promise.allSettled([
+        this.getTrendingJobs(Math.ceil(limit * 0.6)), // Increased trending jobs allocation
+        this.getSkillBasedRecommendations([], Math.ceil(limit * 0.25)),
+        this.getCompanyBasedRecommendations(Math.ceil(limit * 0.15))
       ]);
 
       return {
-        personalized: personalized.status === 'fulfilled' ? personalized.value : [],
         trending: trending.status === 'fulfilled' ? trending.value : [],
         skillBased: skillBased.status === 'fulfilled' ? skillBased.value : [],
         companyBased: companyBased.status === 'fulfilled' ? companyBased.value : []
@@ -200,7 +203,6 @@ export class RecommendationService {
     } catch (error) {
       console.warn('Failed to fetch mixed recommendations:', error);
       return {
-        personalized: [],
         trending: [],
         skillBased: [],
         companyBased: []

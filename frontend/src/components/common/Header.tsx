@@ -73,7 +73,14 @@ const Header: React.FC = () => {
     { name: 'About', href: '/about', current: location.pathname === '/about' },
     { name: 'Contact', href: '/contact', current: location.pathname === '/contact' },
     ...(userState.isAuthenticated 
-      ? [{ name: 'Profile', href: '/profile', current: location.pathname === '/profile' }]
+      ? [
+          { name: 'Applications', href: '/applications', current: location.pathname === '/applications' },
+          { name: 'Profile', href: '/profile', current: location.pathname === '/profile' }
+        ]
+      : []
+    ),
+    ...(userState.isAuthenticated && userState.user?.is_staff
+      ? [{ name: 'Admin', href: '/admin', current: location.pathname === '/admin' }]
       : []
     ),
   ];

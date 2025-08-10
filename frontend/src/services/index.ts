@@ -217,6 +217,34 @@ class HttpClient {
     };
   }
 
+  // Form data POST method
+  async postFormData<T>(url: string, formData: FormData): Promise<ApiResponse<T>> {
+    const response = await this.client.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
+  // Form data PUT method  
+  async putFormData<T>(url: string, formData: FormData): Promise<ApiResponse<T>> {
+    const response = await this.client.put(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return {
+      data: response.data,
+      status: response.status,
+    };
+  }
+
   // Cache management methods
   invalidateCache(pattern?: string): void {
     if (pattern) {
@@ -250,6 +278,8 @@ export { bookmarkService, BookmarkService } from './bookmarkService';
 export { shareService, ShareService } from './shareService';
 export { searchService, SearchService } from './searchService';
 export { recommendationService, RecommendationService } from './recommendationService';
+export { adminService, AdminService } from './adminService';
+export { companyService, CompanyService } from './companyService';
 export { default as cacheService } from './cacheService';
 export { default as performanceService } from './performanceService';
 
