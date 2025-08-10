@@ -4,6 +4,45 @@ import django.contrib.postgres.search
 from django.db import migrations
 
 
+def check_and_add_search_vector_fields(apps, schema_editor):
+    """
+    Check if search_vector columns exist and add them if they don't.
+    This handles the case where they might already exist from raw SQL migrations.
+    """
+    db_alias = schema_editor.connection.alias
+    
+    with schema_editor.connection.cursor() as cursor:
+        # Check if company.search_vector column exists
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='company' AND column_name='search_vector'
+        """)
+        company_has_search_vector = cursor.fetchone() is not None
+        
+        # Check if job.search_vector column exists  
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='job' AND column_name='search_vector'
+        """)
+        job_has_search_vector = cursor.fetchone() is not None
+        
+        # Add columns only if they don't exist
+        if not company_has_search_vector:
+            cursor.execute("ALTER TABLE company ADD COLUMN search_vector tsvector;")
+            
+        if not job_has_search_vector:
+            cursor.execute("ALTER TABLE job ADD COLUMN search_vector tsvector;")
+
+
+def reverse_add_search_vector_fields(apps, schema_editor):
+    """Reverse the operation by dropping the columns if they exist"""
+    with schema_editor.connection.cursor() as cursor:
+        cursor.execute("ALTER TABLE company DROP COLUMN IF EXISTS search_vector;")
+        cursor.execute("ALTER TABLE job DROP COLUMN IF EXISTS search_vector;")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,18 +50,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="company",
-            name="search_vector",
-            field=django.contrib.postgres.search.SearchVectorField(
-                blank=True, null=True
-            ),
-        ),
-        migrations.AddField(
-            model_name="job",
-            name="search_vector",
-            field=django.contrib.postgres.search.SearchVectorField(
-                blank=True, null=True
-            ),
+        migrations.RunPython(
+            check_and_add_search_vector_fields,
+            reverse_add_search_vector_fields,
         ),
     ]
