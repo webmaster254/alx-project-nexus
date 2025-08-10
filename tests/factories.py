@@ -50,7 +50,7 @@ class UserProfileFactory(DjangoModelFactory):
         model = UserProfile
     
     user = factory.SubFactory(UserFactory)
-    phone_number = factory.Faker('phone_number')
+    phone_number = factory.LazyFunction(lambda: '+1-555-' + str(random.randint(100, 999)) + '-' + str(random.randint(1000, 9999)))
     bio = factory.Faker('text', max_nb_chars=400)
     location = factory.Faker('city')
     website = factory.Faker('url')
@@ -136,7 +136,7 @@ class CompanyFactory(DjangoModelFactory):
     description = factory.Faker('text', max_nb_chars=500)
     website = factory.Faker('url')
     email = factory.Faker('company_email')
-    phone = factory.Faker('phone_number')
+    phone = factory.LazyFunction(lambda: '+1-555-' + str(random.randint(100, 999)) + '-' + str(random.randint(1000, 9999)))
     address = factory.Faker('address')
     founded_year = fuzzy.FuzzyInteger(1950, 2020)
     employee_count = factory.Iterator([
