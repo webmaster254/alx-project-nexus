@@ -75,10 +75,11 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const loadCategories = async () => {
       try {
         setIsLoadingCategories(true);
-        const fetchedCategories = await categoryService.getCategories();
-        setAvailableCategories(fetchedCategories);
+        const fetchedCategories = await categoryService.getAllCategories();
+        setAvailableCategories(Array.isArray(fetchedCategories) ? fetchedCategories : []);
       } catch (error) {
         console.error('Failed to load categories:', error);
+        setAvailableCategories([]);
       } finally {
         setIsLoadingCategories(false);
       }
@@ -134,7 +135,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   };
 
   const activeFiltersCount = getActiveFiltersCount();
-  const displayedCategories = showAllCategories ? categories : (categories || []).slice(0, 8);
+  const categoriesArray = Array.isArray(categories) ? categories : [];
+  const displayedCategories = showAllCategories ? categoriesArray : categoriesArray.slice(0, 8);
 
   const sidebarContent = (
     <div className="space-y-6">

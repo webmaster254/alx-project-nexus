@@ -7,11 +7,11 @@ import type { Industry, JobType } from '../../services/categoryService';
 
 interface JobFormProps {
   job?: AdminJob; // If editing existing job
-  onClose: () => void;
-  onSuccess: (job: AdminJob) => void;
+  onSubmit: (jobData: AdminJobData) => Promise<void>;
+  onCancel: () => void;
 }
 
-const JobForm: React.FC<JobFormProps> = ({ job, onClose, onSuccess }) => {
+const JobForm: React.FC<JobFormProps> = ({ job, onSubmit, onCancel }) => {
   const isEditing = !!job;
   
   const [formData, setFormData] = useState<AdminJobData>({
@@ -59,27 +59,27 @@ const JobForm: React.FC<JobFormProps> = ({ job, onClose, onSuccess }) => {
   useEffect(() => {
     if (isEditing && job) {
       setFormData({
-        title: job.title,
-        description: job.description,
-        company_id: job.company.id,
-        category_ids: job.categories.map(cat => cat.id),
-        industry_id: job.industry?.id,
-        job_type_id: job.job_type.id,
-        location: job.location,
-        is_remote: job.is_remote,
+        title: job.title || '',
+        description: job.description || '',
+        company_id: job.company?.id || 0,
+        category_ids: job.categories?.map(cat => cat.id) || [],
+        industry_id: job.industry?.id || 0,
+        job_type_id: job.job_type?.id || 0,
+        location: job.location || '',
+        is_remote: job.is_remote || false,
         experience_level: job.experience_level as any,
-        salary_min: job.salary_min,
-        salary_max: job.salary_max,
-        salary_currency: job.salary_currency,
-        salary_type: job.salary_type as any,
-        requirements: job.requirements.length > 0 ? job.requirements : [''],
-        responsibilities: job.responsibilities.length > 0 ? job.responsibilities : [''],
+        salary_min: job.salary_min || 0,
+        salary_max: job.salary_max || 0,
+        salary_currency: job.salary_currency || 'USD',
+        salary_type: job.salary_type as any || 'yearly',
+        requirements: (job.requirements && job.requirements.length > 0) ? job.requirements : [''],
+        responsibilities: (job.responsibilities && job.responsibilities.length > 0) ? job.responsibilities : [''],
         benefits: job.benefits || [],
         skills_required: job.skills_required || [],
-        application_deadline: job.application_deadline,
-        is_featured: job.is_featured,
-        is_urgent: job.is_urgent,
-        is_active: job.is_active
+        application_deadline: job.application_deadline || '',
+        is_featured: job.is_featured || false,
+        is_urgent: job.is_urgent || false,
+        is_active: job.is_active !== undefined ? job.is_active : true
       });
     }
   }, [isEditing, job]);
@@ -152,19 +152,10 @@ const JobForm: React.FC<JobFormProps> = ({ job, onClose, onSuccess }) => {
     };
 
     try {
-      let result: AdminJob;
-      if (isEditing && job) {
-        result = await adminService.updateJob(job.id, cleanedData);
-        setSuccess('Job updated successfully!');
-      } else {
-        result = await adminService.createJob(cleanedData);
-        setSuccess('Job created successfully!');
-      }
-
-      setTimeout(() => {
-        onSuccess(result);
-        onClose();
-      }, 1500);
+      // Let the parent handle the API call
+      await onSubmit(cleanedData);
+      setSuccess(`Job ${isEditing ? 'updated' : 'created'} successfully!`);
+      
     } catch (error: any) {
       setError(error.message || `Failed to ${isEditing ? 'update' : 'create'} job`);
     } finally {
@@ -221,7 +212,7 @@ const JobForm: React.FC<JobFormProps> = ({ job, onClose, onSuccess }) => {
             {isEditing ? 'Edit Job' : 'Create New Job'}
           </h2>
           <button
-            onClick={onClose}
+            onClick={onCancel}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="h-5 w-5 text-gray-400" />
@@ -578,7 +569,7 @@ const JobForm: React.FC<JobFormProps> = ({ job, onClose, onSuccess }) => {
           <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onCancel}
               className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={saving}
             >

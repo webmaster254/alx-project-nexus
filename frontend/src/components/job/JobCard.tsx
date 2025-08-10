@@ -301,6 +301,47 @@ const JobCard: React.FC<JobCardProps> = ({ job, onClick, showActions = true }) =
             </div>
             <span className="font-medium">{getExperienceLevelDisplay(job.experience_level)}</span>
           </div>
+
+          {/* Application deadline */}
+          {job.application_deadline && (() => {
+            const deadlineDate = new Date(job.application_deadline);
+            const today = new Date();
+            const timeDiff = deadlineDate.getTime() - today.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+            const isUrgent = daysDiff <= 7 && daysDiff >= 0;
+            const isExpired = daysDiff < 0;
+            
+            return (
+              <div className={`flex items-center text-sm ${isExpired ? 'text-red-700' : isUrgent ? 'text-orange-600' : 'text-gray-600'}`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 group-hover:opacity-80 transition-colors duration-300 ${
+                  isExpired ? 'bg-red-100 group-hover:bg-red-200' :
+                  isUrgent ? 'bg-orange-100 group-hover:bg-orange-200' : 
+                  'bg-blue-100 group-hover:bg-blue-200'
+                }`}>
+                  <svg className={`w-4 h-4 ${
+                    isExpired ? 'text-red-600' :
+                    isUrgent ? 'text-orange-600' : 
+                    'text-blue-600'
+                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 8V9a1 1 0 011-1h2a1 1 0 011 1v8a1 1 0 01-1 1H9a1 1 0 01-1-1z" />
+                  </svg>
+                </div>
+                <span className="font-medium">
+                  {isExpired ? 'Expired: ' : 'Deadline: '}
+                  {deadlineDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                  {isUrgent && !isExpired && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      {daysDiff === 0 ? 'Today!' : daysDiff === 1 ? 'Tomorrow!' : `${daysDiff} days left`}
+                    </span>
+                  )}
+                </span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Categories */}

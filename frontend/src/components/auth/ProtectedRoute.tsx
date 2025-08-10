@@ -52,6 +52,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check admin role requirement
   if (requireAdmin && (!state.isAuthenticated || !state.user?.is_staff)) {
+    // Debug logging for admin access issues
+    console.log('Admin access check failed:', {
+      requireAdmin,
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+      is_staff: state.user?.is_staff,
+      userKeys: state.user ? Object.keys(state.user) : 'No user'
+    });
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md mx-auto p-8">
@@ -66,6 +75,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <p className="text-gray-600 mb-6">
             You don't have permission to access this page. Admin privileges are required.
           </p>
+          <div className="mb-4 text-xs text-gray-500 bg-gray-100 p-2 rounded">
+            Debug: isAuthenticated={String(state.isAuthenticated)}, is_staff={String(state.user?.is_staff)}
+          </div>
           <button
             onClick={() => window.history.back()}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

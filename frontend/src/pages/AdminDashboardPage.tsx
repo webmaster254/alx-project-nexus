@@ -19,12 +19,14 @@ import {
 import { adminService, applicationService, companyService, categoryService } from '../services';
 import type { AdminJob, AdminCompany, Application } from '../services/adminService';
 import type { Industry, JobType } from '../services/categoryService';
+import JobForm from '../components/admin/JobForm';
 
 const AdminDashboardPage: React.FC = () => {
   // State management
   const [activeTab, setActiveTab] = useState<'overview' | 'jobs' | 'companies' | 'applications' | 'categories'>('overview');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
 
   // Dashboard stats
   const [dashboardStats, setDashboardStats] = useState({
@@ -102,12 +104,41 @@ const AdminDashboardPage: React.FC = () => {
           break;
           
         case 'applications':
-          const applicationsData = await applicationService.getApplications({
-            search: searchQuery,
-            page: currentPage,
-            page_size: 20
-          });
-          setApplications(applicationsData.results);
+          setApplicationsLoading(true);
+          try {
+            // Try to get pending applications first (faster endpoint)
+            const applicationsData = await applicationService.getPendingApplications({
+              search: searchQuery,
+              page: currentPage,
+              page_size: 20
+            });
+            setApplications(applicationsData.results);
+            console.log(`Loaded ${applicationsData.results.length} pending applications`);
+          } catch (pendingError) {
+            console.warn('Failed to load pending applications, trying all applications:', pendingError);
+            try {
+              // Fallback to all applications with shorter timeout
+              const applicationsData = await applicationService.getApplications({
+                search: searchQuery,
+                page: currentPage,
+                page_size: 5 // Even smaller page size for faster loading
+              });
+              setApplications(applicationsData.results);
+              console.log(`Loaded ${applicationsData.results.length} applications`);
+            } catch (allError) {
+              console.error('Failed to load applications:', allError);
+              // Show a meaningful error message for timeout issues
+              if (allError.code === 'TIMEOUT' || allError.status === 408) {
+                setError('Applications are taking too long to load. This usually happens when there are many applications in the system. Try refreshing or contact your system administrator.');
+              } else {
+                setError('Unable to load applications. The applications endpoint may be experiencing issues.');
+              }
+              // Set empty applications array to prevent UI issues
+              setApplications([]);
+            }
+          } finally {
+            setApplicationsLoading(false);
+          }
           break;
           
         case 'categories':
@@ -585,7 +616,19 @@ const AdminDashboardPage: React.FC = () => {
               {activeTab === 'overview' && <OverviewTab />}
               {activeTab === 'jobs' && <DataTable data={jobs} type="jobs" />}
               {activeTab === 'companies' && <DataTable data={companies} type="companies" />}
-              {activeTab === 'applications' && <DataTable data={applications} type="applications" />}
+              {activeTab === 'applications' && (
+                applicationsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading applications...</p>
+                      <p className="text-sm text-gray-500 mt-2">This may take a moment for large datasets</p>
+                    </div>
+                  </div>
+                ) : (
+                  <DataTable data={applications} type="applications" />
+                )
+              )}
               {activeTab === 'categories' && (
                 <div className="space-y-8">
                   <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -662,6 +705,57 @@ const AdminDashboardPage: React.FC = () => {
             </>
           )}
         </div>
+
+        {/* Job Creation/Edit Modal */}
+        {(showCreateModal || showEditModal) && activeTab === 'jobs' && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {showCreateModal ? 'Create New Job' : 'Edit Job'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setShowEditModal(false);
+                    setEditingItem(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <JobForm
+                job={editingItem}
+                onSubmit={async (jobData) => {
+                  try {
+                    if (showCreateModal) {
+                      await adminService.createJob(jobData);
+                    } else if (editingItem) {
+                      await adminService.updateJob(editingItem.id, jobData);
+                    }
+                    
+                    // Close modal and refresh data
+                    setShowCreateModal(false);
+                    setShowEditModal(false);
+                    setEditingItem(null);
+                    loadTabData();
+                    loadDashboardStats();
+                  } catch (error) {
+                    console.error('Failed to save job:', error);
+                    alert('Failed to save job. Please try again.');
+                  }
+                }}
+                onCancel={() => {
+                  setShowCreateModal(false);
+                  setShowEditModal(false);
+                  setEditingItem(null);
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

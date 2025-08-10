@@ -63,8 +63,54 @@ const ApplicationsPage: React.FC = () => {
       }
 
       const response = await applicationService.getMyApplications(params);
-      setApplications(response.results);
-      setTotalCount(response.count);
+      console.log('Applications API response:', response);
+      
+      // Transform the API response to match our expected structure
+      const processedApplications = response.results?.map(app => {
+        // The API returns a flattened job structure, so we need to normalize it
+        if (app.job && typeof app.job === 'object') {
+          const jobData = app.job as any;
+          
+          // Parse salary from salary_display if min/max not available
+          let salaryMin, salaryMax;
+          if (jobData.salary_display && !jobData.salary_min) {
+            const salaryMatch = jobData.salary_display.match(/\$?([\d,]+)\s*-\s*\$?([\d,]+)/);
+            if (salaryMatch) {
+              salaryMin = parseInt(salaryMatch[1].replace(/,/g, ''));
+              salaryMax = parseInt(salaryMatch[2].replace(/,/g, ''));
+            }
+          } else {
+            salaryMin = jobData.salary_min;
+            salaryMax = jobData.salary_max;
+          }
+
+          return {
+            ...app,
+            job: {
+              id: jobData.id,
+              title: jobData.title,
+              company: {
+                id: 0, // Not provided in API
+                name: jobData.company_name || 'Unknown Company',
+                logo: jobData.company_logo
+              },
+              location: jobData.location,
+              salary_min: salaryMin,
+              salary_max: salaryMax,
+              salary_currency: jobData.salary_currency || 'USD',
+              application_deadline: jobData.application_deadline
+            } as any,
+            // Handle status - it might be a string instead of an object
+            status: typeof app.status === 'string' 
+              ? { id: 0, name: app.status, created_at: '', updated_at: '' }
+              : app.status || { id: 0, name: 'unknown', created_at: '', updated_at: '' }
+          };
+        }
+        return app;
+      }) || [];
+      
+      setApplications(processedApplications);
+      setTotalCount(response.count || 0);
     } catch (error: any) {
       setError('Failed to load applications');
       console.error('Failed to load applications:', error);
@@ -76,9 +122,10 @@ const ApplicationsPage: React.FC = () => {
   const loadStatuses = async () => {
     try {
       const statusList = await applicationService.getApplicationStatuses();
-      setStatuses(statusList);
+      setStatuses(Array.isArray(statusList) ? statusList : []);
     } catch (error) {
       console.error('Failed to load statuses:', error);
+      setStatuses([]);
     }
   };
 
@@ -185,7 +232,7 @@ const ApplicationsPage: React.FC = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="all">All Status</option>
-                {statuses.map(status => (
+                {Array.isArray(statuses) && statuses.map(status => (
                   <option key={status.id} value={status.name}>
                     {status.name.charAt(0).toUpperCase() + status.name.slice(1)}
                   </option>
@@ -253,7 +300,7 @@ const ApplicationsPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {applications.map((application) => (
+            {Array.isArray(applications) && applications.map((application) => (
               <div key={application.id} className="bg-white p-6 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -261,29 +308,29 @@ const ApplicationsPage: React.FC = () => {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {application.job.title}
+                          {application.job?.title || 'Unknown Job'}
                         </h3>
                         <div className="flex items-center text-sm text-gray-600 space-x-4">
                           <div className="flex items-center">
                             <Building className="h-4 w-4 mr-1" />
-                            {application.job.company.name}
+                            {application.job?.company?.name || 'Unknown Company'}
                           </div>
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-1" />
-                            {application.job.location}
+                            {application.job?.location || 'Unknown Location'}
                           </div>
-                          {application.job.salary_min && application.job.salary_max && (
+                          {application.job?.salary_min && application.job?.salary_max && (
                             <div className="text-green-600 font-medium">
-                              ${application.job.salary_min.toLocaleString()} - ${application.job.salary_max.toLocaleString()} {application.job.salary_currency}
+                              ${application.job.salary_min.toLocaleString()} - ${application.job.salary_max.toLocaleString()} {application.job?.salary_currency || 'USD'}
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* Status Badge */}
-                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(application.status.name)}`}>
-                        {getStatusIcon(application.status.name)}
-                        <span className="ml-2 capitalize">{application.status.name}</span>
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(application.status?.name || 'unknown')}`}>
+                        {getStatusIcon(application.status?.name || 'unknown')}
+                        <span className="ml-2 capitalize">{application.status?.name || 'Unknown'}</span>
                       </div>
                     </div>
 
@@ -292,16 +339,46 @@ const ApplicationsPage: React.FC = () => {
                       <div>
                         <h4 className="text-sm font-medium text-gray-700 mb-2">Application Dates</h4>
                         <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Applied: {formatDate(application.applied_at)}
-                          </div>
-                          {application.updated_at !== application.applied_at && (
+                          {application.applied_at && (
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              Applied: {formatDate(application.applied_at)}
+                            </div>
+                          )}
+                          {application.updated_at && application.updated_at !== application.applied_at && (
                             <div className="flex items-center">
                               <Clock className="h-4 w-4 mr-2" />
                               Updated: {formatDate(application.updated_at)}
                             </div>
                           )}
+                           {application.job?.application_deadline && (() => {
+                            const deadlineDate = new Date(application.job.application_deadline);
+                            const today = new Date();
+                            const timeDiff = deadlineDate.getTime() - today.getTime();
+                            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                            const isUrgent = daysDiff <= 7 && daysDiff >= 0;
+                            const isExpired = daysDiff < 0;
+                            
+                            return (
+                              <div className={`flex items-center ${isExpired ? 'text-red-600' : isUrgent ? 'text-orange-600' : 'text-gray-600'}`}>
+                                <Calendar className="h-4 w-4 mr-2" />
+                                <span>
+                                  {isExpired ? 'Expired: ' : 'Deadline: '}
+                                  {formatDate(application.job.application_deadline)}
+                                  {isUrgent && !isExpired && (
+                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                      {daysDiff === 0 ? 'Today!' : daysDiff === 1 ? 'Tomorrow!' : `${daysDiff} days left`}
+                                    </span>
+                                  )}
+                                  {isExpired && (
+                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                      Expired
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
 
@@ -332,9 +409,9 @@ const ApplicationsPage: React.FC = () => {
                       <div className="mt-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-2">Cover Letter</h4>
                         <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                          {application.cover_letter.length > 200 
+                          {application.cover_letter && application.cover_letter.length > 200 
                             ? `${application.cover_letter.substring(0, 200)}...` 
-                            : application.cover_letter
+                            : application.cover_letter || 'No cover letter provided'
                           }
                         </p>
                       </div>
@@ -356,14 +433,15 @@ const ApplicationsPage: React.FC = () => {
                 <div className="flex items-center justify-end mt-6 pt-4 border-t border-gray-100">
                   <div className="flex space-x-3">
                     <button
-                      onClick={() => window.open(`/jobs/${application.job.id}`, '_blank')}
+                      onClick={() => window.open(`/jobs/${application.job?.id}`, '_blank')}
                       className="inline-flex items-center px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      disabled={!application.job?.id}
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View Job
                     </button>
                     
-                    {application.status.name === 'pending' && (
+                    {application.status?.name === 'pending' && (
                       <button
                         onClick={() => handleWithdrawApplication(application.id)}
                         className="inline-flex items-center px-3 py-2 text-sm text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors"

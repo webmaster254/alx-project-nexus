@@ -98,17 +98,96 @@ export class ApplicationService {
   }
 
   /**
-   * Get current user's applications
+   * Get current user's applications (original simple format)
    */
-  async getMyApplications(params: Omit<ApplicationFilterParams, 'user__id'> = {}): Promise<PaginatedResponse<Application>> {
-    const response: ApiResponse<PaginatedResponse<Application>> = await httpClient.get(
+  async getMyApplicationsSimple(): Promise<Application[]> {
+    const response: ApiResponse<Application[]> = await httpClient.get(
       `${this.baseUrl}/applications/my-applications/`,
-      params,
+      {},
       true,
       true,
       5 * 60 * 1000
     );
     return response.data;
+  }
+
+  /**
+   * Get current user's applications (with pagination and filtering)
+   */
+  async getMyApplications(params: Omit<ApplicationFilterParams, 'user__id'> = {}): Promise<PaginatedResponse<Application>> {
+    try {
+      // First try the paginated endpoint
+      const response: ApiResponse<PaginatedResponse<Application>> = await httpClient.get(
+        `${this.baseUrl}/applications/my-applications/`,
+        params,
+        true,
+        true,
+        5 * 60 * 1000
+      );
+      return response.data;
+    } catch (error) {
+      console.warn('Paginated endpoint failed, falling back to simple endpoint:', error);
+      // Fallback to simple endpoint and convert to paginated format
+      const applications = await this.getMyApplicationsSimple();
+      
+      // Apply client-side filtering and pagination
+      let filteredApps = applications;
+      
+      // Apply search filter
+      if (params.search) {
+        const searchLower = params.search.toLowerCase();
+        filteredApps = filteredApps.filter(app => 
+          app.job?.title?.toLowerCase().includes(searchLower) ||
+          app.job?.company?.name?.toLowerCase().includes(searchLower) ||
+          app.status?.name?.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Apply status filter
+      if (params.status__name && params.status__name !== 'all') {
+        filteredApps = filteredApps.filter(app => app.status?.name === params.status__name);
+      }
+      
+      // Apply sorting
+      if (params.ordering) {
+        const isDesc = params.ordering.startsWith('-');
+        const field = isDesc ? params.ordering.substring(1) : params.ordering;
+        
+        filteredApps.sort((a, b) => {
+          let aVal, bVal;
+          if (field === 'applied_at' || field === 'updated_at') {
+            aVal = new Date(a[field] || 0).getTime();
+            bVal = new Date(b[field] || 0).getTime();
+          } else if (field === 'company') {
+            aVal = a.job?.company?.name || '';
+            bVal = b.job?.company?.name || '';
+          } else if (field === 'job_title') {
+            aVal = a.job?.title || '';
+            bVal = b.job?.title || '';
+          } else {
+            aVal = a[field as keyof Application] || '';
+            bVal = b[field as keyof Application] || '';
+          }
+          
+          if (aVal < bVal) return isDesc ? 1 : -1;
+          if (aVal > bVal) return isDesc ? -1 : 1;
+          return 0;
+        });
+      }
+      
+      // Apply pagination
+      const page = params.page || 1;
+      const pageSize = params.page_size || 10;
+      const startIndex = (page - 1) * pageSize;
+      const paginatedApps = filteredApps.slice(startIndex, startIndex + pageSize);
+      
+      return {
+        count: filteredApps.length,
+        next: page * pageSize < filteredApps.length ? `page=${page + 1}` : null,
+        previous: page > 1 ? `page=${page - 1}` : null,
+        results: paginatedApps
+      };
+    }
   }
 
   /**

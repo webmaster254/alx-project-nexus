@@ -177,6 +177,13 @@ CACHES = {
 # Static files configuration for production
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
+# Whitenoise configuration for static files (if using)
+if config('USE_WHITENOISE', default=False, cast=bool):
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    WHITENOISE_USE_FINDERS = True
+    WHITENOISE_AUTOREFRESH = False
+
 # Production logging configuration with monitoring support
 LOG_DIR = config('LOG_DIR', default='/var/log/django')
 LOG_LEVEL = config('LOG_LEVEL', default='INFO')

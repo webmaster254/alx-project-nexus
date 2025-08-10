@@ -419,8 +419,8 @@ export class AdminService {
         featured_jobs: featuredJobsResponse.status === 'fulfilled' ? featuredJobsResponse.value.count : 0,
         total_companies: companiesResponse.status === 'fulfilled' ? companiesResponse.value.count : 0,
         verified_companies: verifiedCompaniesResponse.status === 'fulfilled' ? verifiedCompaniesResponse.value.count : 0,
-        total_applications: applicationsResponse.status === 'fulfilled' ? applicationsResponse.value.data.count : 0,
-        pending_applications: pendingApplicationsResponse.status === 'fulfilled' ? pendingApplicationsResponse.value.data.count : 0,
+        total_applications: applicationsResponse.status === 'fulfilled' ? applicationsResponse.value.count : 0,
+        pending_applications: pendingApplicationsResponse.status === 'fulfilled' ? pendingApplicationsResponse.value.count : 0,
         total_users: 0, // Would need user endpoint
         active_users: 0, // Would need user endpoint
         jobs_this_month: 0, // Would need date filtering
