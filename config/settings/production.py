@@ -119,10 +119,10 @@ if DATABASE_URL:
             ssl_require=True
         )
     }
-    # Add connection pooling options
+    # Add valid PostgreSQL connection options
+    if 'OPTIONS' not in DATABASES['default']:
+        DATABASES['default']['OPTIONS'] = {}
     DATABASES['default']['OPTIONS'].update({
-        'MAX_CONNS': config('DB_MAX_CONNECTIONS', default=20, cast=int),
-        'MIN_CONNS': config('DB_MIN_CONNECTIONS', default=5, cast=int),
         'connect_timeout': config('DB_CONNECT_TIMEOUT', default=10, cast=int),
         'application_name': config('DB_APPLICATION_NAME', default='job_board_backend'),
     })
@@ -138,13 +138,8 @@ else:
             'PORT': config('DB_PORT', default='5432'),
             'OPTIONS': {
                 'sslmode': 'require',
-                'MAX_CONNS': config('DB_MAX_CONNECTIONS', default=20, cast=int),
-                'MIN_CONNS': config('DB_MIN_CONNECTIONS', default=5, cast=int),
                 'connect_timeout': config('DB_CONNECT_TIMEOUT', default=10, cast=int),
                 'application_name': config('DB_APPLICATION_NAME', default='job_board_backend'),
-                # Connection pooling settings
-                'server_side_binding': True,
-                'prepared_statement_cache_size': config('DB_PREPARED_STATEMENT_CACHE_SIZE', default=100, cast=int),
             },
             'CONN_MAX_AGE': config('DB_CONN_MAX_AGE', default=600, cast=int),
             'CONN_HEALTH_CHECKS': config('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
@@ -387,6 +382,14 @@ MEDIA_ROOT = config('MEDIA_ROOT', default=os.path.join(BASE_DIR, 'media'))
 # Static files configuration for production
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATIC_ROOT = config('STATIC_ROOT', default=os.path.join(BASE_DIR, 'staticfiles'))
+
+# Override STATICFILES_DIRS to only include existing directories
+import pathlib
+static_dir = pathlib.Path(BASE_DIR) / 'static'
+if static_dir.exists():
+    STATICFILES_DIRS = [static_dir]
+else:
+    STATICFILES_DIRS = []
 
 # Whitenoise configuration for static files (if using)
 if config('USE_WHITENOISE', default=False, cast=bool):
