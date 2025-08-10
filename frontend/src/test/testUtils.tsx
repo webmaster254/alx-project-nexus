@@ -1,10 +1,16 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 import { UserProvider } from '../contexts/UserContext';
 import { FilterProvider } from '../contexts/FilterContext';
 import { JobProvider } from '../contexts/JobContext';
 import { BookmarkProvider } from '../contexts/BookmarkContext';
+import { axe } from 'jest-axe';
+import { count } from 'console';
+import { T } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
+import { count } from 'console';
+import { T } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
 
 // Custom render function that includes all providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
