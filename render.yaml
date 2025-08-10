@@ -1,10 +1,8 @@
 databases:
   - name: jobboarddb
     plan: free
-    type: postgresql
     databaseName: jobboard
     user: jobboard
-    password: password
     
 services:
   - type: web
