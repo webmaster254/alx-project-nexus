@@ -4,7 +4,6 @@ Production settings for job board backend project.
 
 from .base import *
 import os
-import logging.config
 from decouple import config
 
 
@@ -13,7 +12,6 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Environment validation
 REQUIRED_ENV_VARS = [
     'SECRET_KEY',
-    'ALLOWED_HOSTS',
 ]
 
 # Database URL is optional if individual DB vars are provided
@@ -27,6 +25,11 @@ missing_vars = []
 for var in REQUIRED_ENV_VARS:
     if not config(var, default=None):
         missing_vars.append(var)
+
+# Special validation for ALLOWED_HOSTS
+ALLOWED_HOSTS_RAW = config('ALLOWED_HOSTS', default=None)
+if not ALLOWED_HOSTS_RAW:
+    missing_vars.append('ALLOWED_HOSTS')
 
 if missing_vars:
     raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
@@ -185,13 +188,17 @@ if config('USE_WHITENOISE', default=False, cast=bool):
     WHITENOISE_AUTOREFRESH = False
 
 # Production logging configuration with monitoring support
-LOG_DIR = config('LOG_DIR', default='/var/log/django')
+LOG_DIR = config('LOG_DIR', default=os.path.join(BASE_DIR, 'logs'))
 LOG_LEVEL = config('LOG_LEVEL', default='INFO')
 ENABLE_STRUCTURED_LOGGING = config('ENABLE_STRUCTURED_LOGGING', default=True, cast=bool)
 
-# Ensure log directory exists
-import os
-os.makedirs(LOG_DIR, exist_ok=True)
+# Ensure log directory exists (only if writable)
+try:
+    os.makedirs(LOG_DIR, exist_ok=True)
+except (PermissionError, OSError):
+    # Fall back to using BASE_DIR/logs if system logs are not accessible
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+    os.makedirs(LOG_DIR, exist_ok=True)
 
 # Enhanced logging configuration for production monitoring
 LOGGING = {
